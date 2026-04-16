@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { MapPin, Check, X } from 'lucide-react';
 
 // Fix default marker icon issue with bundlers
-delete (L.Icon.Default.prototype as Record<string, unknown>)._getIconUrl;
+delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
 
 function createMarkerIcon(visited: boolean): L.DivIcon {
   const color = visited ? '#522398' : '#6b7280';

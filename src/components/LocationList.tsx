@@ -1,18 +1,20 @@
 import { useState, useMemo } from 'react';
+import { Link } from '@tanstack/react-router';
 import type { Location } from '@/hooks/use-locations';
-import { Check, MapPin, Search, ArrowUpDown } from 'lucide-react';
+import { Check, MapPin, Search, ArrowUpDown, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface LocationListProps {
   locations: Location[];
   isVisited: (id: string) => boolean;
   onToggleVisit: (id: string) => void;
+  isLoggedIn: boolean;
 }
 
 type SortKey = 'name' | 'region' | 'visited';
 type SortDir = 'asc' | 'desc';
 
-export function LocationList({ locations, isVisited, onToggleVisit }: LocationListProps) {
+export function LocationList({ locations, isVisited, onToggleVisit, isLoggedIn }: LocationListProps) {
   const [search, setSearch] = useState('');
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
@@ -53,8 +55,25 @@ export function LocationList({ locations, isVisited, onToggleVisit }: LocationLi
     return result;
   }, [locations, search, sortKey, sortDir, filter, isVisited]);
 
+  const handleRowClick = (id: string) => {
+    if (!isLoggedIn) return;
+    onToggleVisit(id);
+  };
+
   return (
     <div className="space-y-4">
+      {!isLoggedIn && (
+        <div className="flex items-center justify-between bg-primary/10 border border-primary/20 rounded-lg px-4 py-3">
+          <p className="text-sm text-primary font-medium">Log in to track which outlets you've visited</p>
+          <Link to="/login">
+            <Button size="sm" className="gap-1.5 shrink-0">
+              <LogIn className="w-3.5 h-3.5" />
+              Log in
+            </Button>
+          </Link>
+        </div>
+      )}
+
       {/* Search & Filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
@@ -67,19 +86,21 @@ export function LocationList({ locations, isVisited, onToggleVisit }: LocationLi
             className="w-full bg-card border border-border rounded-lg pl-9 pr-4 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
           />
         </div>
-        <div className="flex gap-1.5">
-          {(['all', 'visited', 'unvisited'] as const).map(f => (
-            <Button
-              key={f}
-              variant={filter === f ? 'secondary' : 'ghost'}
-              size="sm"
-              onClick={() => setFilter(f)}
-              className="capitalize text-xs"
-            >
-              {f}
-            </Button>
-          ))}
-        </div>
+        {isLoggedIn && (
+          <div className="flex gap-1.5">
+            {(['all', 'visited', 'unvisited'] as const).map(f => (
+              <Button
+                key={f}
+                variant={filter === f ? 'secondary' : 'ghost'}
+                size="sm"
+                onClick={() => setFilter(f)}
+                className="capitalize text-xs"
+              >
+                {f}
+              </Button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Table header */}
@@ -91,24 +112,28 @@ export function LocationList({ locations, isVisited, onToggleVisit }: LocationLi
         <button className="flex items-center gap-1 hover:text-foreground transition-colors" onClick={() => toggleSort('region')}>
           Region <ArrowUpDown className="w-3 h-3" />
         </button>
-        <button className="flex items-center gap-1 justify-center hover:text-foreground transition-colors" onClick={() => toggleSort('visited')}>
-          Status <ArrowUpDown className="w-3 h-3" />
-        </button>
+        {isLoggedIn && (
+          <button className="flex items-center gap-1 justify-center hover:text-foreground transition-colors" onClick={() => toggleSort('visited')}>
+            Status <ArrowUpDown className="w-3 h-3" />
+          </button>
+        )}
       </div>
 
       {/* Rows */}
       <div className="space-y-1.5">
         {filtered.map(loc => {
-          const visited = isVisited(loc.id);
+          const visited = isLoggedIn && isVisited(loc.id);
           return (
             <div
               key={loc.id}
-              className={`group rounded-lg border transition-all cursor-pointer ${
+              className={`group rounded-lg border transition-all ${
+                isLoggedIn ? 'cursor-pointer' : ''
+              } ${
                 visited
                   ? 'bg-primary/5 border-primary/20 hover:border-primary/40'
                   : 'bg-card border-border hover:border-muted-foreground/30'
               }`}
-              onClick={() => onToggleVisit(loc.id)}
+              onClick={() => handleRowClick(loc.id)}
             >
               {/* Desktop row */}
               <div className="hidden sm:grid grid-cols-[1fr_1fr_120px_80px] gap-2 items-center px-4 py-3">
@@ -118,15 +143,17 @@ export function LocationList({ locations, isVisited, onToggleVisit }: LocationLi
                 </div>
                 <span className="text-xs text-muted-foreground truncate">{loc.address}</span>
                 <span className="text-xs text-muted-foreground">{loc.region || '—'}</span>
-                <div className="flex justify-center">
-                  <div className={`w-6 h-6 rounded-md flex items-center justify-center transition-all ${
-                    visited
-                      ? 'bg-primary text-primary-foreground'
-                      : 'border border-muted-foreground/30 group-hover:border-primary/50'
-                  }`}>
-                    {visited && <Check className="w-3.5 h-3.5" />}
+                {isLoggedIn && (
+                  <div className="flex justify-center">
+                    <div className={`w-6 h-6 rounded-md flex items-center justify-center transition-all ${
+                      visited
+                        ? 'bg-primary text-primary-foreground'
+                        : 'border border-muted-foreground/30 group-hover:border-primary/50'
+                    }`}>
+                      {visited && <Check className="w-3.5 h-3.5" />}
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
 
               {/* Mobile card */}

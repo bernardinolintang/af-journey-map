@@ -1,16 +1,15 @@
 import { useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { Link } from '@tanstack/react-router';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { Location } from '@/hooks/use-locations';
-import { Button } from '@/components/ui/button';
-import { MapPin, Check, X } from 'lucide-react';
+import { Check, X, LogIn } from 'lucide-react';
 
 // Fix default marker icon issue with bundlers
 delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
 
 function createMarkerIcon(visited: boolean): L.DivIcon {
-  const color = visited ? '#522398' : '#6b7280';
   const bg = visited ? '#522398' : 'transparent';
   const border = visited ? '#7B4DB3' : '#9ca3af';
   const inner = visited
@@ -57,9 +56,10 @@ interface GymMapProps {
   locations: Location[];
   isVisited: (id: string) => boolean;
   onToggleVisit: (id: string) => void;
+  isLoggedIn: boolean;
 }
 
-export function GymMap({ locations, isVisited, onToggleVisit }: GymMapProps) {
+export function GymMap({ locations, isVisited, onToggleVisit, isLoggedIn }: GymMapProps) {
   return (
     <div className="rounded-xl overflow-hidden border border-border">
       <MapContainer
@@ -91,26 +91,35 @@ export function GymMap({ locations, isVisited, onToggleVisit }: GymMapProps) {
                       {loc.region}
                     </span>
                   )}
-                  <button
-                    onClick={() => onToggleVisit(loc.id)}
-                    className={`w-full flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition-all ${
-                      visited
-                        ? 'bg-muted text-muted-foreground hover:bg-destructive/20 hover:text-destructive'
-                        : 'bg-primary text-primary-foreground hover:bg-primary/80'
-                    }`}
-                  >
-                    {visited ? (
-                      <>
-                        <X className="w-3 h-3" />
-                        Unmark Visit
-                      </>
-                    ) : (
-                      <>
-                        <Check className="w-3 h-3" />
-                        Mark as Visited
-                      </>
-                    )}
-                  </button>
+                  {isLoggedIn ? (
+                    <button
+                      onClick={() => onToggleVisit(loc.id)}
+                      className={`w-full flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition-all ${
+                        visited
+                          ? 'bg-muted text-muted-foreground hover:bg-destructive/20 hover:text-destructive'
+                          : 'bg-primary text-primary-foreground hover:bg-primary/80'
+                      }`}
+                    >
+                      {visited ? (
+                        <>
+                          <X className="w-3 h-3" />
+                          Unmark Visit
+                        </>
+                      ) : (
+                        <>
+                          <Check className="w-3 h-3" />
+                          Mark as Visited
+                        </>
+                      )}
+                    </button>
+                  ) : (
+                    <Link to="/login">
+                      <button className="w-full flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/80 transition-all">
+                        <LogIn className="w-3 h-3" />
+                        Log in to save visits
+                      </button>
+                    </Link>
+                  )}
                 </div>
               </Popup>
             </Marker>

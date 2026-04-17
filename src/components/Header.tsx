@@ -19,9 +19,9 @@ export function Header() {
         </Link>
 
         <div className="flex items-center gap-1">
-          <Link to="/map">
+          <Link to="/">
             <Button
-              variant={location.pathname === '/map' ? 'secondary' : 'ghost'}
+              variant={location.pathname === '/' ? 'secondary' : 'ghost'}
               size="sm"
               className="gap-1.5"
             >

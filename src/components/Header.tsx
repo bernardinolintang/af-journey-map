@@ -1,10 +1,12 @@
 import { Link, useLocation } from '@tanstack/react-router';
 import { useAuth } from '@/hooks/use-auth';
-import { Dumbbell, LogOut, Map, List, LogIn } from 'lucide-react';
+import { useTheme } from '@/hooks/use-theme';
+import { Dumbbell, LogOut, Map, List, LogIn, Sun, Moon } from 'lucide-react';
 
 export function Header() {
   const { user, signOut } = useAuth();
   const location = useLocation();
+  const { theme, toggleTheme } = useTheme();
   const path = location.pathname;
 
   return (
@@ -30,6 +32,19 @@ export function Header() {
         <nav className="flex items-center gap-1">
           <NavLink to="/" active={path === '/'} icon={<Map className="w-4 h-4" />} label="Map" />
           <NavLink to="/list" active={path === '/list'} icon={<List className="w-4 h-4" />} label="List" />
+
+          {/* Theme toggle */}
+          <button
+            type="button"
+            onClick={toggleTheme}
+            className="nav-btn nav-btn-ghost"
+            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {theme === 'dark'
+              ? <Sun className="w-4 h-4" />
+              : <Moon className="w-4 h-4" />
+            }
+          </button>
 
           {user ? (
             <button

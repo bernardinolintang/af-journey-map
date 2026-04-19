@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import {
   APIProvider,
   Map,
@@ -10,12 +10,39 @@ import type { Location } from '@/hooks/use-locations';
 import { Check, X, Map as MapIcon, Satellite, Box, Locate } from 'lucide-react';
 
 const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string;
-const MAP_ID = import.meta.env.VITE_GOOGLE_MAPS_MAP_ID as string | undefined;
+const MAP_ID = (import.meta.env.VITE_GOOGLE_MAPS_MAP_ID as string) || undefined;
 
 const SG_CENTER = { lat: 1.3521, lng: 103.8198 };
+// Bounding box that frames the whole Singapore island
+const SG_BOUNDS = {
+  north: 1.478,
+  south: 1.205,
+  east:  104.094,
+  west:  103.595,
+};
+
+// Dark road-map styles — only used when NO Map ID is configured
+// (mapId and styles are mutually exclusive in the Google Maps API)
+const DARK_STYLES: google.maps.MapTypeStyle[] = [
+  { elementType: 'geometry', stylers: [{ color: '#1a1f2e' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#8896b3' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#1a1f2e' }] },
+  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#2a3045' }] },
+  { featureType: 'road.arterial', elementType: 'geometry', stylers: [{ color: '#2d3555' }] },
+  { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#374370' }] },
+  { featureType: 'road.highway', elementType: 'geometry.stroke', stylers: [{ color: '#1a1f2e' }] },
+  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0d1117' }] },
+  { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#4a6fa5' }] },
+  { featureType: 'poi', elementType: 'geometry', stylers: [{ color: '#1e2535' }] },
+  { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#1a2e1a' }] },
+  { featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] },
+  { featureType: 'transit', elementType: 'geometry', stylers: [{ color: '#1a2035' }] },
+  { featureType: 'administrative', elementType: 'geometry.stroke', stylers: [{ color: '#3a4060' }] },
+  { featureType: 'administrative.land_parcel', elementType: 'labels', stylers: [{ visibility: 'off' }] },
+];
 
 // ---------------------------------------------------------------------------
-// Marker pin SVG rendered as AdvancedMarker child
+// Marker pin
 // ---------------------------------------------------------------------------
 function MarkerPin({ visited }: { visited: boolean }) {
   return (
@@ -29,7 +56,6 @@ function MarkerPin({ visited }: { visited: boolean }) {
           : 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))',
         transition: 'transform 0.15s ease, filter 0.2s ease',
       }}
-      className="marker-pin"
     >
       <svg width="30" height="38" viewBox="0 0 30 38" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path
@@ -54,7 +80,7 @@ function MarkerPin({ visited }: { visited: boolean }) {
 }
 
 // ---------------------------------------------------------------------------
-// Map type + tilt controls
+// Map type toggle bar
 // ---------------------------------------------------------------------------
 type MapMode = 'roadmap' | 'satellite' | '3d';
 
@@ -69,7 +95,6 @@ function MapControls({
 }) {
   return (
     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 z-10">
-      {/* Mode pills */}
       <div className="flex items-center bg-black/70 backdrop-blur-md border border-white/10 rounded-xl p-1 gap-0.5 shadow-2xl">
         {(
           [
@@ -93,12 +118,11 @@ function MapControls({
           </button>
         ))}
       </div>
-      {/* Recenter button */}
       <button
         type="button"
         onClick={onRecenter}
         className="w-9 h-9 flex items-center justify-center bg-black/70 backdrop-blur-md border border-white/10 rounded-xl text-white/60 hover:text-white hover:bg-white/10 transition-all shadow-2xl"
-        title="Re-center map"
+        title="Re-center"
       >
         <Locate className="w-4 h-4" />
       </button>
@@ -107,7 +131,7 @@ function MapControls({
 }
 
 // ---------------------------------------------------------------------------
-// Inner map component (needs map context)
+// Inner map (needs map context from APIProvider)
 // ---------------------------------------------------------------------------
 interface MapInnerProps {
   locations: Location[];
@@ -123,79 +147,86 @@ function MapInner({ locations, isVisited, onToggleVisit, mode, onModeChange }: M
   const selectedLoc = locations.find((l) => l.id === selectedId);
 
   const handleRecenter = useCallback(() => {
-    if (!map) return;
+    if (!map || !locations.length) return;
     const bounds = new google.maps.LatLngBounds();
     locations.forEach((l) => bounds.extend({ lat: l.lat, lng: l.lng }));
     map.fitBounds(bounds, 60);
   }, [map, locations]);
 
-  // Apply tilt when mode changes
-  const prevMode = useRef<MapMode>(mode);
-  if (prevMode.current !== mode && map) {
-    prevMode.current = mode;
-    if (mode === '3d') {
-      map.setMapTypeId('satellite');
-      map.setTilt(60);
-      map.setHeading(0);
-    } else if (mode === 'satellite') {
-      map.setMapTypeId('satellite');
-      map.setTilt(0);
-    } else {
-      map.setMapTypeId('roadmap');
-      map.setTilt(0);
-    }
-  }
-
   return (
     <>
-      {locations.map((loc) => {
-        const visited = isVisited(loc.id);
-        return (
-          <AdvancedMarker
-            key={loc.id}
-            position={{ lat: loc.lat, lng: loc.lng }}
-            onClick={() => setSelectedId(loc.id === selectedId ? null : loc.id)}
-            zIndex={visited ? 2 : 1}
-          >
-            <MarkerPin visited={visited} />
-          </AdvancedMarker>
-        );
-      })}
+      {locations.map((loc) => (
+        <AdvancedMarker
+          key={loc.id}
+          position={{ lat: loc.lat, lng: loc.lng }}
+          onClick={() => setSelectedId(loc.id === selectedId ? null : loc.id)}
+          zIndex={isVisited(loc.id) ? 2 : 1}
+        >
+          <MarkerPin visited={isVisited(loc.id)} />
+        </AdvancedMarker>
+      ))}
 
       {selectedLoc && (
         <InfoWindow
           position={{ lat: selectedLoc.lat, lng: selectedLoc.lng }}
           onCloseClick={() => setSelectedId(null)}
           pixelOffset={[0, -44]}
+          headerDisabled
         >
-          <div className="min-w-[200px] max-w-[240px] p-0.5">
-            <h3 className="font-bold text-sm mb-1 text-gray-900 leading-tight">{selectedLoc.name}</h3>
-            <p className="text-xs text-gray-500 mb-2 leading-relaxed">{selectedLoc.address}</p>
+          {/* Inline styles are required — InfoWindow renders inside Google's shadow DOM
+              where global CSS classes cannot reach the content reliably */}
+          <div style={{
+            minWidth: 210,
+            maxWidth: 250,
+            background: '#12172a',
+            borderRadius: 12,
+            padding: '12px 12px 10px',
+            fontFamily: '"DM Sans", system-ui, sans-serif',
+          }}>
+            <p style={{ fontWeight: 700, fontSize: 13, color: '#f0f2ff', marginBottom: 4, lineHeight: 1.35 }}>
+              {selectedLoc.name}
+            </p>
+            <p style={{ fontSize: 11, color: '#8896b3', marginBottom: 8, lineHeight: 1.5 }}>
+              {selectedLoc.address}
+            </p>
             {selectedLoc.region && (
-              <span className="inline-block text-[10px] bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full mb-2 font-medium">
+              <span style={{
+                display: 'inline-block',
+                fontSize: 10,
+                background: 'rgba(124,66,237,0.18)',
+                color: '#c4a8ff',
+                border: '1px solid rgba(124,66,237,0.3)',
+                padding: '2px 8px',
+                borderRadius: 99,
+                marginBottom: 10,
+                fontWeight: 600,
+              }}>
                 {selectedLoc.region}
               </span>
             )}
             <button
               type="button"
-              onClick={() => {
-                onToggleVisit(selectedLoc.id);
-                setSelectedId(null);
+              onClick={() => { onToggleVisit(selectedLoc.id); setSelectedId(null); }}
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 6,
+                borderRadius: 8,
+                padding: '9px 12px',
+                fontSize: 12,
+                fontWeight: 600,
+                border: 'none',
+                cursor: 'pointer',
+                background: isVisited(selectedLoc.id) ? 'rgba(255,255,255,0.08)' : '#7C42ED',
+                color: isVisited(selectedLoc.id) ? '#8896b3' : '#fff',
               }}
-              className={`w-full flex items-center justify-center gap-1.5 rounded-lg px-3 py-2.5 text-xs font-semibold transition-all touch-manipulation ${
-                isVisited(selectedLoc.id)
-                  ? 'bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-red-600'
-                  : 'bg-violet-600 text-white hover:bg-violet-700'
-              }`}
             >
               {isVisited(selectedLoc.id) ? (
-                <>
-                  <X className="w-3.5 h-3.5" /> Unmark Visit
-                </>
+                <><X style={{ width: 13, height: 13 }} /> Unmark Visit</>
               ) : (
-                <>
-                  <Check className="w-3.5 h-3.5" /> Mark as Visited
-                </>
+                <><Check style={{ width: 13, height: 13 }} /> Mark as Visited</>
               )}
             </button>
           </div>
@@ -219,9 +250,9 @@ function NoApiKeyMessage() {
       <div>
         <p className="font-semibold text-foreground text-sm mb-1">Google Maps API key required</p>
         <p className="text-xs text-muted-foreground leading-relaxed max-w-xs">
-          Add <code className="bg-muted px-1.5 py-0.5 rounded text-violet-400">VITE_GOOGLE_MAPS_API_KEY</code> to
-          your <code className="bg-muted px-1.5 py-0.5 rounded text-violet-400">.env</code> file to enable the
-          interactive map.
+          Add{' '}
+          <code className="bg-muted px-1.5 py-0.5 rounded text-violet-400">VITE_GOOGLE_MAPS_API_KEY</code> to your{' '}
+          <code className="bg-muted px-1.5 py-0.5 rounded text-violet-400">.env</code> file.
         </p>
       </div>
     </div>
@@ -239,56 +270,32 @@ interface GoogleMapViewProps {
 
 export function GoogleMapView({ locations, isVisited, onToggleVisit }: GoogleMapViewProps) {
   const [mode, setMode] = useState<MapMode>('roadmap');
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-  const mapHeight = isMobile ? '50vh' : '65vh';
 
   if (!API_KEY) {
     return (
-      <div
-        className="rounded-2xl overflow-hidden border border-border bg-card"
-        style={{ height: mapHeight, minHeight: isMobile ? 350 : 400 }}
-      >
+      <div className="w-full h-full rounded-2xl overflow-hidden border border-border bg-card">
         <NoApiKeyMessage />
       </div>
     );
   }
 
+  // mapId and styles are mutually exclusive — only pass styles when there is no Map ID
+  const mapProps = MAP_ID
+    ? { mapId: MAP_ID }
+    : { styles: mode === 'roadmap' ? DARK_STYLES : [] };
+
   return (
-    <div
-      className="rounded-2xl overflow-hidden border border-border relative shadow-2xl shadow-black/30"
-      style={{ height: mapHeight, minHeight: isMobile ? 350 : 400 }}
-    >
+    <div className="w-full h-full rounded-2xl overflow-hidden border border-border relative shadow-2xl shadow-black/30">
       <APIProvider apiKey={API_KEY}>
         <Map
-          mapId={MAP_ID || undefined}
-          defaultCenter={SG_CENTER}
-          defaultZoom={12}
+          {...mapProps}
+          defaultBounds={SG_BOUNDS}
           mapTypeId={mode === 'roadmap' ? 'roadmap' : 'satellite'}
           tilt={mode === '3d' ? 60 : 0}
           disableDefaultUI
           gestureHandling="greedy"
           className="w-full h-full"
-          styles={
-            mode === 'roadmap'
-              ? [
-                  { elementType: 'geometry', stylers: [{ color: '#1a1f2e' }] },
-                  { elementType: 'labels.text.fill', stylers: [{ color: '#8896b3' }] },
-                  { elementType: 'labels.text.stroke', stylers: [{ color: '#1a1f2e' }] },
-                  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#2a3045' }] },
-                  { featureType: 'road.arterial', elementType: 'geometry', stylers: [{ color: '#2d3555' }] },
-                  { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#374370' }] },
-                  { featureType: 'road.highway', elementType: 'geometry.stroke', stylers: [{ color: '#1a1f2e' }] },
-                  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0d1117' }] },
-                  { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#4a6fa5' }] },
-                  { featureType: 'poi', elementType: 'geometry', stylers: [{ color: '#1e2535' }] },
-                  { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#1a2e1a' }] },
-                  { featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] },
-                  { featureType: 'transit', elementType: 'geometry', stylers: [{ color: '#1a2035' }] },
-                  { featureType: 'administrative', elementType: 'geometry.stroke', stylers: [{ color: '#3a4060' }] },
-                  { featureType: 'administrative.land_parcel', elementType: 'labels', stylers: [{ visibility: 'off' }] },
-                ]
-              : []
-          }
+          style={{ width: '100%', height: '100%' }}
         >
           <MapInner
             locations={locations}

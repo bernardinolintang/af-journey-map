@@ -1,8 +1,8 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@/hooks/use-auth";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Dumbbell, Mail, Lock, Loader2 } from "lucide-react";
+import { Dumbbell, Mail, Lock, Loader2, Zap } from "lucide-react";
 
 export const Route = createFileRoute("/login")({
   head: () => ({
@@ -13,6 +13,9 @@ export const Route = createFileRoute("/login")({
   }),
   component: LoginPage,
 });
+
+const DEMO_EMAIL = "demo@af-tracker.sg";
+const DEMO_PASSWORD = "demo123456";
 
 function LoginPage() {
   const { user, loading: authLoading, signIn, signUp } = useAuth();
@@ -55,17 +58,51 @@ function LoginPage() {
     }
   };
 
+  const handleDemoLogin = async () => {
+    setError("");
+    setSuccess("");
+    setLoading(true);
+    setEmail(DEMO_EMAIL);
+    setPassword(DEMO_PASSWORD);
+    setIsSignUp(false);
+    const { error } = await signIn(DEMO_EMAIL, DEMO_PASSWORD);
+    if (error) {
+      setError("Demo account not set up yet. Ask the admin to create it.");
+    }
+    setLoading(false);
+  };
+
+  const isRateLimit = error.toLowerCase().includes("rate limit") || error.toLowerCase().includes("too many");
+
   return (
     <div className="flex min-h-[85vh] items-center justify-center px-4">
-      <div className="w-full max-w-sm space-y-8">
+      <div className="w-full max-w-sm space-y-6">
         <div className="text-center space-y-2">
-          <div className="mx-auto w-14 h-14 rounded-xl bg-primary flex items-center justify-center mb-4">
+          <div className="mx-auto w-14 h-14 rounded-xl bg-primary flex items-center justify-center mb-4"
+               style={{ boxShadow: '0 0 20px oklch(0.52 0.24 295 / 0.4)' }}>
             <Dumbbell className="w-7 h-7 text-primary-foreground" />
           </div>
           <h1 className="text-2xl font-bold">{isSignUp ? "Create Account" : "Welcome Back"}</h1>
           <p className="text-sm text-muted-foreground">
             {isSignUp ? "Sign up to start tracking your visits" : "Sign in to continue tracking"}
           </p>
+        </div>
+
+        {/* Demo login */}
+        <button
+          type="button"
+          onClick={handleDemoLogin}
+          disabled={loading}
+          className="w-full flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold border border-amber-500/30 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 transition-all"
+        >
+          <Zap className="w-4 h-4" />
+          Try demo account
+        </button>
+
+        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <div className="flex-1 h-px bg-border" />
+          <span>or</span>
+          <div className="flex-1 h-px bg-border" />
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -96,8 +133,22 @@ function LoginPage() {
           </div>
 
           {error && (
-            <div className="bg-destructive/10 text-destructive text-sm rounded-lg px-3 py-2">
-              {error}
+            <div className="bg-destructive/10 text-destructive text-sm rounded-lg px-3 py-2 space-y-1">
+              <p>{error}</p>
+              {isRateLimit && (
+                <p className="text-xs opacity-80">
+                  Supabase limits email sending on the free plan. Wait a few minutes, or{" "}
+                  <a
+                    href="https://supabase.com/dashboard/project/_/auth/providers"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline"
+                  >
+                    disable email confirmation
+                  </a>{" "}
+                  in your project settings.
+                </p>
+              )}
             </div>
           )}
 

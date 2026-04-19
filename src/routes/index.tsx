@@ -50,14 +50,18 @@ function HomePage() {
   }
 
   return (
-    <main className="max-w-7xl mx-auto px-4 py-4 space-y-4">
-      <ProgressBar
-        visited={visitedCount}
-        total={totalCount}
-        percentage={percentage}
-        loggedOut={!isAuthed}
-      />
-      <GoogleMapView locations={locations} isVisited={isVisited} onToggleVisit={handleToggle} />
+    <main className="flex flex-col" style={{ height: 'calc(100svh - 60px)' }}>
+      <div className="px-4 py-3 max-w-7xl mx-auto w-full">
+        <ProgressBar
+          visited={visitedCount}
+          total={totalCount}
+          percentage={percentage}
+          loggedOut={!isAuthed}
+        />
+      </div>
+      <div className="flex-1 px-4 pb-4 min-h-0">
+        <GoogleMapView locations={locations} isVisited={isVisited} onToggleVisit={handleToggle} />
+      </div>
     </main>
   );
 }

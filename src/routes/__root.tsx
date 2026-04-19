@@ -1,5 +1,6 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { AuthProvider } from "@/hooks/use-auth";
+import { ThemeProvider } from "@/hooks/use-theme";
 import { Header } from "@/components/Header";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -49,7 +50,7 @@ export const Route = createRootRoute({
 
 function RootShell({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
@@ -63,6 +64,7 @@ function RootShell({ children }: { children: React.ReactNode }) {
 
 function RootComponent() {
   return (
+    <ThemeProvider>
     <AuthProvider>
       <div className="app-root min-h-screen">
         {/* layered background: mesh gradients + grain */}
@@ -75,5 +77,6 @@ function RootComponent() {
         <Toaster position="bottom-center" />
       </div>
     </AuthProvider>
+    </ThemeProvider>
   );
 }

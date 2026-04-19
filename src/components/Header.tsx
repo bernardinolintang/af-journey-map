@@ -2,12 +2,24 @@ import { Link, useLocation } from '@tanstack/react-router';
 import { useAuth } from '@/hooks/use-auth';
 import { useTheme } from '@/hooks/use-theme';
 import { LogOut, Map, List, LogIn, Sun, Moon } from 'lucide-react';
+import { useState } from 'react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 export function Header() {
   const { user, signOut } = useAuth();
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
   const path = location.pathname;
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
   return (
     <header className="header-root sticky top-0 z-50">
@@ -25,6 +37,7 @@ export function Header() {
             className="h-8 w-auto object-contain"
             style={{ filter: 'brightness(1.05)' }}
           />
+          <span className="text-sm font-bold tracking-tight text-foreground">AF Tracker</span>
           <span className="badge-sg">SG</span>
         </Link>
 
@@ -47,14 +60,31 @@ export function Header() {
           </button>
 
           {user ? (
-            <button
-              type="button"
-              onClick={signOut}
-              className="nav-btn nav-btn-ghost gap-1.5"
-            >
-              <LogOut className="w-4 h-4" />
-              <span className="hidden sm:inline">Logout</span>
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={() => setShowLogoutDialog(true)}
+                className="nav-btn nav-btn-ghost gap-1.5"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="hidden sm:inline">Logout</span>
+              </button>
+
+              <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Log out?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Your visit progress is saved. You can sign back in anytime.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={signOut}>Log out</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </>
           ) : (
             <Link to="/login" className="nav-btn nav-btn-cta gap-1.5">
               <LogIn className="w-4 h-4" />

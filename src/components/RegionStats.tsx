@@ -38,7 +38,7 @@ export function RegionStats({ locations, isVisited, activeRegion, onRegionClick 
             onClick={() => onRegionClick(active ? null : region)}
             className={`text-left rounded-xl px-3 py-2.5 flex flex-col gap-1.5 border transition-all ${
               active
-                ? 'bg-primary/15 border-primary/50 ring-1 ring-primary/30'
+                ? 'bg-violet-500/30 border-violet-400 ring-2 ring-violet-400/60 shadow-[0_0_12px_rgba(139,92,246,0.35)]'
                 : 'bg-card border-border hover:border-primary/30 hover:bg-primary/5'
             }`}
           >

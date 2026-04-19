@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useLocations } from "@/hooks/use-locations";
+import { useMilestoneToasts } from "@/hooks/use-milestone-toasts";
 import { GoogleMapView } from "@/components/GoogleMapView";
 import { ProgressBar } from "@/components/ProgressBar";
 import { RegionStats } from "@/components/RegionStats";
@@ -31,6 +32,15 @@ function HomePage() {
     percentage,
     isAuthed,
   } = useLocations();
+
+  useMilestoneToasts({
+    visitedCount,
+    totalCount,
+    percentage,
+    locations,
+    isVisited,
+    enabled: isAuthed,
+  });
 
   const handleToggle = async (id: string) => {
     const { requiresAuth } = await toggleVisit(id);

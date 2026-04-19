@@ -14,8 +14,8 @@ export const Route = createFileRoute("/login")({
   component: LoginPage,
 });
 
-const DEMO_EMAIL = "demo@af-tracker.sg";
-const DEMO_PASSWORD = "demo123456";
+const DEMO_EMAIL = "demo@email.com";
+const DEMO_PASSWORD = "demo";
 
 function LoginPage() {
   const { user, loading: authLoading, signIn, signUp } = useAuth();

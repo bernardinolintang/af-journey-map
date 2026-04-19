@@ -9,7 +9,7 @@ import {
 import type { Location, Visit } from '@/hooks/use-locations';
 import {
   Check, X, Map as MapIcon, Satellite, Box, Locate, Navigation,
-  Search, BarChart2, X as CloseIcon,
+  Search, BarChart2, X as CloseIcon, Plus, Minus,
 } from 'lucide-react';
 
 const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string;
@@ -121,12 +121,14 @@ function MapControls({
   onRecenter, onNearMe, gpsLoading,
   onToggleStats, statsOpen,
   onToggleSearch,
+  onZoomIn, onZoomOut,
 }: {
   mode: MapMode; onModeChange: (m: MapMode) => void;
   mapFilter: MapFilter; onFilterChange: (f: MapFilter) => void;
   onRecenter: () => void; onNearMe: () => void; gpsLoading: boolean;
   onToggleStats: () => void; statsOpen: boolean;
   onToggleSearch: () => void;
+  onZoomIn: () => void; onZoomOut: () => void;
 }) {
   return (
     <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-10 pointer-events-none">
@@ -166,6 +168,26 @@ function MapControls({
               {icon}<span className="hidden sm:inline">{label}</span>
             </button>
           ))}
+        </div>
+
+        {/* Zoom in/out */}
+        <div className="flex flex-col bg-black/70 backdrop-blur-md border border-white/10 rounded-xl shadow-2xl overflow-hidden">
+          <button
+            type="button"
+            onClick={onZoomIn}
+            className="w-9 h-[1.125rem] flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-all border-b border-white/10"
+            title="Zoom in"
+          >
+            <Plus className="w-3 h-3" />
+          </button>
+          <button
+            type="button"
+            onClick={onZoomOut}
+            className="w-9 h-[1.125rem] flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-all"
+            title="Zoom out"
+          >
+            <Minus className="w-3 h-3" />
+          </button>
         </div>
 
         {/* Near Me */}
@@ -381,37 +403,93 @@ function SearchOverlay({
 }
 
 // ---------------------------------------------------------------------------
+// Map legend (bottom-left)
+// ---------------------------------------------------------------------------
+function MapLegend() {
+  return (
+    <div style={{
+      position: 'absolute',
+      bottom: 16,
+      left: 12,
+      zIndex: 10,
+      background: 'rgba(0,0,0,0.70)',
+      backdropFilter: 'blur(10px)',
+      border: '1px solid rgba(255,255,255,0.10)',
+      borderRadius: 10,
+      padding: '7px 10px',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 5,
+      boxShadow: '0 4px 16px rgba(0,0,0,0.4)',
+      fontFamily: '"DM Sans", system-ui, sans-serif',
+      pointerEvents: 'none',
+    }}>
+      {([
+        { color: '#374151', stroke: '#6B7280', label: 'Unvisited' },
+        { color: '#7C42ED', stroke: '#A78BFA', label: 'Visited' },
+        { color: '#F5A623', stroke: '#FCD34D', label: 'Nearest' },
+      ] as const).map(({ color, stroke, label }) => (
+        <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+          <svg width={10} height={10} viewBox="0 0 10 10">
+            <circle cx={5} cy={5} r={4} fill={color} stroke={stroke} strokeWidth={1.5} />
+          </svg>
+          <span style={{ fontSize: 10, color: '#c4cfee', fontWeight: 500 }}>{label}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // First-time onboarding tooltip
 // ---------------------------------------------------------------------------
 function OnboardingTooltip({ onDismiss }: { onDismiss: () => void }) {
   useEffect(() => {
-    const t = setTimeout(onDismiss, 4000);
+    const t = setTimeout(onDismiss, 7000);
     return () => clearTimeout(t);
   }, [onDismiss]);
 
   return (
-    <div style={{
-      position: 'absolute',
-      top: '50%',
-      left: '50%',
-      transform: 'translate(-50%, -50%)',
-      zIndex: 30,
-      background: 'rgba(15,18,35,0.95)',
-      backdropFilter: 'blur(12px)',
-      border: '1px solid rgba(124,66,237,0.4)',
-      borderRadius: 14,
-      padding: '14px 18px',
-      textAlign: 'center',
-      boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
-      fontFamily: '"DM Sans", system-ui, sans-serif',
-      pointerEvents: 'none',
-      animation: 'fadeIn 0.4s ease',
-    }}>
+    <div
+      onClick={onDismiss}
+      style={{
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        zIndex: 30,
+        background: 'rgba(15,18,35,0.95)',
+        backdropFilter: 'blur(12px)',
+        border: '1px solid rgba(124,66,237,0.4)',
+        borderRadius: 14,
+        padding: '14px 18px',
+        textAlign: 'center',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+        fontFamily: '"DM Sans", system-ui, sans-serif',
+        pointerEvents: 'auto',
+        cursor: 'pointer',
+        animation: 'fadeIn 0.4s ease',
+        minWidth: 160,
+      }}
+    >
+      <button
+        type="button"
+        onClick={onDismiss}
+        style={{
+          position: 'absolute', top: 6, right: 8,
+          background: 'none', border: 'none', cursor: 'pointer',
+          color: '#8896b3', fontSize: 14, lineHeight: 1, padding: 0,
+        }}
+        aria-label="Dismiss"
+      >×</button>
       <div style={{ fontSize: 22, marginBottom: 6 }}>📍</div>
       <p style={{ fontSize: 13, fontWeight: 700, color: '#f0f2ff', marginBottom: 4 }}>
         Tap any marker
       </p>
-      <p style={{ fontSize: 11, color: '#8896b3' }}>to log your visit</p>
+      <p style={{ fontSize: 11, color: '#8896b3', marginBottom: 8 }}>to log your visit</p>
+      <p style={{ fontSize: 10, color: '#8896b3' }}>
+        Use <span style={{ color: '#c4a8ff', fontWeight: 600 }}>Near Me</span> to find the closest unvisited outlet
+      </p>
     </div>
   );
 }
@@ -465,6 +543,16 @@ function MapInner({ locations, visits, isVisited, onToggleVisit, mode, onModeCha
     locations.forEach(l => bounds.extend({ lat: l.lat, lng: l.lng }));
     map.fitBounds(bounds, 60);
   }, [map, locations]);
+
+  const handleZoomIn = useCallback(() => {
+    if (!map) return;
+    map.setZoom((map.getZoom() ?? 12) + 1);
+  }, [map]);
+
+  const handleZoomOut = useCallback(() => {
+    if (!map) return;
+    map.setZoom((map.getZoom() ?? 12) - 1);
+  }, [map]);
 
   // GPS near me
   const handleNearMe = useCallback(() => {
@@ -596,6 +684,13 @@ function MapInner({ locations, visits, isVisited, onToggleVisit, mode, onModeCha
                   borderRadius: 99, fontWeight: 600,
                 }}>{selectedLoc.region}</span>
               )}
+              {selectedLoc.is_24h && (
+                <span style={{
+                  fontSize: 10, background: 'rgba(245,166,35,0.15)', color: '#F5A623',
+                  border: '1px solid rgba(245,166,35,0.35)', padding: '2px 8px',
+                  borderRadius: 99, fontWeight: 600,
+                }}>24h</span>
+              )}
               {selectedVisit && (
                 <span style={{
                   fontSize: 10, color: '#8896b3',
@@ -643,6 +738,8 @@ function MapInner({ locations, visits, isVisited, onToggleVisit, mode, onModeCha
         <OnboardingTooltip onDismiss={dismissOnboarding} />
       )}
 
+      <MapLegend />
+
       <MapControls
         mode={mode}
         onModeChange={onModeChange}
@@ -654,6 +751,8 @@ function MapInner({ locations, visits, isVisited, onToggleVisit, mode, onModeCha
         onToggleStats={() => setStatsOpen(s => !s)}
         statsOpen={statsOpen}
         onToggleSearch={() => setSearchOpen(s => !s)}
+        onZoomIn={handleZoomIn}
+        onZoomOut={handleZoomOut}
       />
     </>
   );

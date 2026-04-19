@@ -426,9 +426,10 @@ interface MapInnerProps {
   onToggleVisit: (id: string) => void;
   mode: MapMode;
   onModeChange: (m: MapMode) => void;
+  regionFilter: string | null;
 }
 
-function MapInner({ locations, visits, isVisited, onToggleVisit, mode, onModeChange }: MapInnerProps) {
+function MapInner({ locations, visits, isVisited, onToggleVisit, mode, onModeChange, regionFilter }: MapInnerProps) {
   const map = useMap();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [mapFilter, setMapFilter] = useState<MapFilter>('all');
@@ -443,6 +444,13 @@ function MapInner({ locations, visits, isVisited, onToggleVisit, mode, onModeCha
 
   const selectedLoc = locations.find(l => l.id === selectedId);
   const selectedVisit = visits.find(v => v.location_id === selectedId);
+
+  // Close popup when clicking the map background
+  useEffect(() => {
+    if (!map) return;
+    const listener = map.addListener('click', () => setSelectedId(null));
+    return () => google.maps.event.removeListener(listener);
+  }, [map]);
 
   // Dismiss onboarding
   const dismissOnboarding = useCallback(() => {
@@ -517,12 +525,24 @@ function MapInner({ locations, visits, isVisited, onToggleVisit, mode, onModeCha
       }));
   }, [locations, isVisited]);
 
-  // Filter visible markers
+  // Filter visible markers (map toggle + external region filter)
   const visibleLocations = useMemo(() => {
-    if (mapFilter === 'visited') return locations.filter(l => isVisited(l.id));
-    if (mapFilter === 'unvisited') return locations.filter(l => !isVisited(l.id));
-    return locations;
-  }, [locations, mapFilter, isVisited]);
+    let result = locations;
+    if (regionFilter) result = result.filter(l => (l.region || 'Other') === regionFilter);
+    if (mapFilter === 'visited') result = result.filter(l => isVisited(l.id));
+    if (mapFilter === 'unvisited') result = result.filter(l => !isVisited(l.id));
+    return result;
+  }, [locations, mapFilter, isVisited, regionFilter]);
+
+  // When a region filter activates from outside, fit map to those markers
+  useEffect(() => {
+    if (!map || !regionFilter) return;
+    const filtered = locations.filter(l => (l.region || 'Other') === regionFilter);
+    if (!filtered.length) return;
+    const bounds = new google.maps.LatLngBounds();
+    filtered.forEach(l => bounds.extend({ lat: l.lat, lng: l.lng }));
+    map.fitBounds(bounds, 80);
+  }, [map, regionFilter, locations]);
 
   return (
     <>
@@ -667,9 +687,10 @@ interface GoogleMapViewProps {
   visits: Visit[];
   isVisited: (id: string) => boolean;
   onToggleVisit: (id: string) => void;
+  regionFilter?: string | null;
 }
 
-export function GoogleMapView({ locations, visits, isVisited, onToggleVisit }: GoogleMapViewProps) {
+export function GoogleMapView({ locations, visits, isVisited, onToggleVisit, regionFilter }: GoogleMapViewProps) {
   const [mode, setMode] = useState<MapMode>('roadmap');
 
   if (!API_KEY) {
@@ -714,6 +735,7 @@ export function GoogleMapView({ locations, visits, isVisited, onToggleVisit }: G
             onToggleVisit={onToggleVisit}
             mode={mode}
             onModeChange={setMode}
+            regionFilter={regionFilter ?? null}
           />
         </Map>
       </APIProvider>

@@ -1,7 +1,7 @@
 import { Link, useLocation } from '@tanstack/react-router';
 import { useAuth } from '@/hooks/use-auth';
 import { useTheme } from '@/hooks/use-theme';
-import { Dumbbell, LogOut, Map, List, LogIn, Sun, Moon } from 'lucide-react';
+import { LogOut, Map, List, LogIn, Sun, Moon } from 'lucide-react';
 
 export function Header() {
   const { user, signOut } = useAuth();
@@ -19,12 +19,12 @@ export function Header() {
       <div className="mx-auto max-w-7xl flex items-center justify-between px-4 h-[3.75rem] relative">
         {/* ── Logo ── */}
         <Link to="/" className="flex items-center gap-2.5 group select-none">
-          <div className="logo-icon-wrap">
-            <Dumbbell className="w-4 h-4 text-white" />
-          </div>
-          <span className="font-brand font-bold text-[1.05rem] tracking-tight text-foreground">
-            AF<span className="text-primary-vivid"> Tracker</span>
-          </span>
+          <img
+            src="/af-logo.png"
+            alt="Anytime Fitness"
+            className="h-8 w-auto object-contain"
+            style={{ filter: 'brightness(1.05)' }}
+          />
           <span className="badge-sg">SG</span>
         </Link>
 

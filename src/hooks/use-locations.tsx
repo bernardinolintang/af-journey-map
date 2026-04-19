@@ -43,6 +43,8 @@ export function useLocations() {
         .select('*')
         .eq('user_id', user.id);
       if (vis) setVisits(vis as Visit[]);
+    } else {
+      setVisits([]); // clear when signed out so markers reset
     }
     setLoading(false);
   }, [user]);

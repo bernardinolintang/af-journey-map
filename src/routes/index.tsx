@@ -5,6 +5,7 @@ import { ProgressBar } from "@/components/ProgressBar";
 import { RegionStats } from "@/components/RegionStats";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useState } from "react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -18,6 +19,7 @@ export const Route = createFileRoute("/")({
 
 function HomePage() {
   const navigate = useNavigate();
+  const [activeRegion, setActiveRegion] = useState<string | null>(null);
   const {
     locations,
     visits,
@@ -59,9 +61,16 @@ function HomePage() {
           total={totalCount}
           percentage={percentage}
           loggedOut={!isAuthed}
+          locations={locations}
+          isVisited={isVisited}
         />
         {isAuthed && locations.length > 0 && (
-          <RegionStats locations={locations} isVisited={isVisited} />
+          <RegionStats
+            locations={locations}
+            isVisited={isVisited}
+            activeRegion={activeRegion}
+            onRegionClick={setActiveRegion}
+          />
         )}
       </div>
       <div className="flex-1 px-4 pb-4 min-h-0">
@@ -70,6 +79,7 @@ function HomePage() {
           visits={visits}
           isVisited={isVisited}
           onToggleVisit={handleToggle}
+          regionFilter={activeRegion}
         />
       </div>
     </main>

@@ -1,26 +1,69 @@
 import { Link } from '@tanstack/react-router';
-import { MapPin, Trophy, LogIn, Share2 } from 'lucide-react';
+import { MapPin, Trophy, LogIn, Share2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { generateShareCard } from '@/lib/generate-share-card';
+import { useState } from 'react';
+import type { Location } from '@/hooks/use-locations';
 
 interface ProgressBarProps {
   visited: number;
   total: number;
   percentage: number;
   loggedOut?: boolean;
+  locations?: Location[];
+  isVisited?: (id: string) => boolean;
 }
 
-export function ProgressBar({ visited, total, percentage, loggedOut }: ProgressBarProps) {
+export function ProgressBar({ visited, total, percentage, loggedOut, locations, isVisited }: ProgressBarProps) {
+  const [sharing, setSharing] = useState(false);
+
   const handleShare = async () => {
-    const text = `I've visited ${visited}/${total} Anytime Fitness outlets in Singapore (${percentage}%)! 🏋️\n\nTrack your own journey → https://af-tracker.sg`;
+    setSharing(true);
     try {
-      if (navigator.share) {
-        await navigator.share({ text });
+      // Build region stats for the card
+      const regionStats = (() => {
+        if (!locations || !isVisited) return [];
+        const map: Record<string, { total: number; visited: number }> = {};
+        for (const loc of locations) {
+          const r = loc.region || 'Other';
+          if (!map[r]) map[r] = { total: 0, visited: 0 };
+          map[r].total++;
+          if (isVisited(loc.id)) map[r].visited++;
+        }
+        return Object.entries(map)
+          .sort((a, b) => a[0].localeCompare(b[0]))
+          .map(([region, { total, visited }]) => ({
+            region, total, visited,
+            pct: total > 0 ? Math.round((visited / total) * 100) : 0,
+          }));
+      })();
+
+      const blob = await generateShareCard(visited, total, percentage, regionStats);
+      const file = new File([blob], 'af-journey.png', { type: 'image/png' });
+
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          text: `I've visited ${visited}/${total} Anytime Fitness outlets in Singapore (${percentage}%)! 🏋️`,
+        });
+      } else if (navigator.share) {
+        await navigator.share({
+          text: `I've visited ${visited}/${total} Anytime Fitness outlets in Singapore (${percentage}%)! 🏋️\n\nTrack yours → af-tracker.sg`,
+        });
       } else {
-        await navigator.clipboard.writeText(text);
-        toast('Copied to clipboard!', { description: 'Share your progress anywhere.' });
+        // Fallback: download the image
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'af-journey.png';
+        a.click();
+        URL.revokeObjectURL(url);
+        toast('Image downloaded!', { description: 'Share it anywhere.' });
       }
     } catch {
-      // user cancelled share — ignore
+      // user cancelled — ignore
+    } finally {
+      setSharing(false);
     }
   };
 
@@ -62,10 +105,14 @@ export function ProgressBar({ visited, total, percentage, loggedOut }: ProgressB
           <button
             type="button"
             onClick={handleShare}
-            className="w-7 h-7 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
+            disabled={sharing}
+            className="w-7 h-7 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-all disabled:opacity-50"
             title="Share your progress"
           >
-            <Share2 className="w-3.5 h-3.5" />
+            {sharing
+              ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              : <Share2 className="w-3.5 h-3.5" />
+            }
           </button>
         </div>
       </div>

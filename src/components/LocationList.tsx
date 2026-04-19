@@ -67,7 +67,7 @@ export function LocationList({ locations, isVisited, onToggleVisit }: LocationLi
             className="w-full bg-card border border-border rounded-lg pl-9 pr-4 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
           />
         </div>
-        <div className="flex gap-1.5">
+        <div className="flex flex-wrap gap-1.5">
           {(['all', 'visited', 'unvisited'] as const).map(f => (
             <Button
               key={f}
@@ -81,6 +81,12 @@ export function LocationList({ locations, isVisited, onToggleVisit }: LocationLi
           ))}
         </div>
       </div>
+
+      {/* Result count */}
+      <p className="text-xs text-muted-foreground px-1">
+        Showing <span className="font-medium text-foreground">{filtered.length}</span> of{' '}
+        <span className="font-medium text-foreground">{locations.length}</span> outlets
+      </p>
 
       {/* Table header */}
       <div className="hidden sm:grid grid-cols-[1fr_1fr_120px_80px] gap-2 px-4 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
@@ -154,8 +160,24 @@ export function LocationList({ locations, isVisited, onToggleVisit }: LocationLi
       </div>
 
       {filtered.length === 0 && (
-        <div className="text-center py-12 text-muted-foreground text-sm">
-          No outlets found matching your search.
+        <div className="flex flex-col items-center justify-center py-16 gap-3 text-center">
+          <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
+            <Search className="w-5 h-5 text-muted-foreground" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-foreground">No outlets found</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {search ? `No results for "${search}"` : 'Try a different filter'}
+            </p>
+          </div>
+          {(search || filter !== 'all') && (
+            <button
+              onClick={() => { setSearch(''); setFilter('all'); }}
+              className="text-xs text-primary hover:underline font-medium"
+            >
+              Clear filters
+            </button>
+          )}
         </div>
       )}
     </div>

@@ -1,6 +1,7 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { AuthProvider } from "@/hooks/use-auth";
 import { Header } from "@/components/Header";
+import { Toaster } from "@/components/ui/sonner";
 
 import appCss from "../styles.css?url";
 
@@ -66,6 +67,7 @@ function RootComponent() {
       <div className="min-h-screen bg-background">
         <Header />
         <Outlet />
+        <Toaster position="bottom-center" />
       </div>
     </AuthProvider>
   );

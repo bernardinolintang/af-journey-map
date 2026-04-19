@@ -26,7 +26,7 @@ function LoginPage() {
 
   useEffect(() => {
     if (!authLoading && user) {
-      navigate({ to: "/map" });
+      navigate({ to: "/" });
     }
   }, [user, authLoading, navigate]);
 
@@ -116,6 +116,7 @@ function LoginPage() {
         <p className="text-center text-sm text-muted-foreground">
           {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
           <button
+            type="button"
             onClick={() => { setIsSignUp(!isSignUp); setError(""); setSuccess(""); }}
             className="text-primary hover:underline font-medium"
           >

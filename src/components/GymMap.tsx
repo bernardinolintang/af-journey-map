@@ -3,8 +3,8 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { Location } from '@/hooks/use-locations';
-import { Button } from '@/components/ui/button';
-import { MapPin, Check, X } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Check, X } from 'lucide-react';
 
 // Fix default marker icon issue with bundlers
 delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
@@ -23,14 +23,14 @@ function createMarkerIcon(visited: boolean): L.DivIcon {
     iconAnchor: [16, 40],
     popupAnchor: [0, -42],
     html: `
-      <div style="position:relative;width:32px;height:40px;">
-        <svg width="32" height="40" viewBox="0 0 32 40">
+      <div style="position:relative;width:32px;height:40px;pointer-events:none;">
+        <svg width="32" height="40" viewBox="0 0 32 40" style="pointer-events:none;">
           <path d="M16 0C7.2 0 0 7.2 0 16c0 12 16 24 16 24s16-12 16-24C32 7.2 24.8 0 16 0z"
                 fill="${bg}" stroke="${border}" stroke-width="2"/>
         </svg>
         <div style="position:absolute;top:6px;left:50%;transform:translateX(-50%);width:20px;height:20px;
                     border-radius:50%;background:${visited ? 'rgba(255,255,255,0.2)' : 'transparent'};
-                    display:flex;align-items:center;justify-content:center;">
+                    display:flex;align-items:center;justify-content:center;pointer-events:none;">
           ${inner}
         </div>
       </div>
@@ -60,13 +60,17 @@ interface GymMapProps {
 }
 
 export function GymMap({ locations, isVisited, onToggleVisit }: GymMapProps) {
+  const isMobile = useIsMobile();
+  const mapHeight = isMobile ? '50vh' : '65vh';
+  const mapMinHeight = isMobile ? '350px' : '400px';
+
   return (
     <div className="rounded-xl overflow-hidden border border-border">
       <MapContainer
         center={[1.3521, 103.8198]}
         zoom={12}
         className="w-full"
-        style={{ height: '65vh', minHeight: '400px' }}
+        style={{ height: mapHeight, minHeight: mapMinHeight }}
         zoomControl={true}
       >
         <TileLayer
@@ -82,18 +86,18 @@ export function GymMap({ locations, isVisited, onToggleVisit }: GymMapProps) {
               position={[loc.lat, loc.lng]}
               icon={createMarkerIcon(visited)}
             >
-              <Popup>
-                <div className="min-w-[200px] p-1">
-                  <h3 className="font-bold text-sm mb-1">{loc.name}</h3>
-                  <p className="text-xs opacity-70 mb-3 leading-relaxed">{loc.address}</p>
+              <Popup minWidth={220}>
+                <div className="p-1">
+                  <h3 className="font-bold text-sm mb-1 leading-snug">{loc.name}</h3>
+                  <p className="text-xs opacity-70 mb-2 leading-relaxed">{loc.address}</p>
                   {loc.region && (
-                    <span className="inline-block text-[10px] bg-primary/20 text-primary px-2 py-0.5 rounded-full mb-3">
+                    <span className="inline-block text-[10px] bg-primary/20 text-primary px-2 py-0.5 rounded-full mb-2">
                       {loc.region}
                     </span>
                   )}
                   <button
                     onClick={() => onToggleVisit(loc.id)}
-                    className={`w-full flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold transition-all ${
+                    className={`w-full flex items-center justify-center gap-1.5 rounded-lg px-3 py-3 text-xs font-semibold transition-all touch-manipulation ${
                       visited
                         ? 'bg-muted text-muted-foreground hover:bg-destructive/20 hover:text-destructive'
                         : 'bg-primary text-primary-foreground hover:bg-primary/80'
@@ -101,12 +105,12 @@ export function GymMap({ locations, isVisited, onToggleVisit }: GymMapProps) {
                   >
                     {visited ? (
                       <>
-                        <X className="w-3 h-3" />
+                        <X className="w-3.5 h-3.5" />
                         Unmark Visit
                       </>
                     ) : (
                       <>
-                        <Check className="w-3 h-3" />
+                        <Check className="w-3.5 h-3.5" />
                         Mark as Visited
                       </>
                     )}

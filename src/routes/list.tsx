@@ -1,33 +1,47 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useAuth } from "@/hooks/use-auth";
 import { useLocations } from "@/hooks/use-locations";
-import { useEffect } from "react";
 import { LocationList } from "@/components/LocationList";
 import { ProgressBar } from "@/components/ProgressBar";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/list")({
   head: () => ({
     meta: [
       { title: "Outlet List — AF Tracker" },
-      { name: "description", content: "Browse and filter all Anytime Fitness outlets in Singapore." },
+      { name: "description", content: "Browse and filter every Anytime Fitness outlet in Singapore." },
     ],
   }),
   component: ListPage,
 });
 
 function ListPage() {
-  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const { locations, loading, toggleVisit, isVisited, visitedCount, totalCount, percentage } = useLocations();
+  const {
+    locations,
+    loading,
+    toggleVisit,
+    isVisited,
+    visitedCount,
+    totalCount,
+    percentage,
+    isAuthed,
+  } = useLocations();
 
-  useEffect(() => {
-    if (!authLoading && !user) {
-      navigate({ to: "/login" });
+  const handleToggle = async (id: string) => {
+    const { requiresAuth } = await toggleVisit(id);
+    if (requiresAuth) {
+      toast("Sign in to track your visits", {
+        description: "Create a free account to save which outlets you've been to.",
+        action: {
+          label: "Sign in",
+          onClick: () => navigate({ to: "/login" }),
+        },
+      });
     }
-  }, [user, authLoading, navigate]);
+  };
 
-  if (authLoading || loading) {
+  if (loading) {
     return (
       <div className="flex min-h-[80vh] items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -35,12 +49,15 @@ function ListPage() {
     );
   }
 
-  if (!user) return null;
-
   return (
     <main className="max-w-7xl mx-auto px-4 py-4 space-y-4">
-      <ProgressBar visited={visitedCount} total={totalCount} percentage={percentage} />
-      <LocationList locations={locations} isVisited={isVisited} onToggleVisit={toggleVisit} />
+      <ProgressBar
+        visited={visitedCount}
+        total={totalCount}
+        percentage={percentage}
+        loggedOut={!isAuthed}
+      />
+      <LocationList locations={locations} isVisited={isVisited} onToggleVisit={handleToggle} />
     </main>
   );
 }

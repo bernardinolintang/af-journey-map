@@ -39,7 +39,7 @@ export const Route = createRootRoute({
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" },
     ],
   }),
   shellComponent: RootShell,
@@ -64,9 +64,14 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   return (
     <AuthProvider>
-      <div className="min-h-screen bg-background">
-        <Header />
-        <Outlet />
+      <div className="app-root min-h-screen">
+        {/* layered background: mesh gradients + grain */}
+        <div className="bg-mesh" aria-hidden />
+        <div className="bg-grain" aria-hidden />
+        <div className="relative z-10 flex flex-col min-h-screen">
+          <Header />
+          <Outlet />
+        </div>
         <Toaster position="bottom-center" />
       </div>
     </AuthProvider>

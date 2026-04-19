@@ -51,8 +51,8 @@ export function useLocations() {
     fetchData();
   }, [fetchData]);
 
-  const toggleVisit = async (locationId: string) => {
-    if (!user) return;
+  const toggleVisit = async (locationId: string): Promise<{ requiresAuth: boolean }> => {
+    if (!user) return { requiresAuth: true };
 
     const existing = visits.find(v => v.location_id === locationId);
     if (existing) {
@@ -78,6 +78,7 @@ export function useLocations() {
         setVisits(prev => prev.map(v => v.id === tempVisit.id ? data as Visit : v));
       }
     }
+    return { requiresAuth: false };
   };
 
   const isVisited = (locationId: string) => visits.some(v => v.location_id === locationId);
@@ -94,6 +95,7 @@ export function useLocations() {
     visitedCount,
     totalCount,
     percentage,
+    isAuthed: !!user,
     refetch: fetchData,
   };
 }

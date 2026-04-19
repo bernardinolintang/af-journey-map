@@ -1,14 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { lazy, Suspense } from "react";
 import { useLocations } from "@/hooks/use-locations";
+import { GoogleMapView } from "@/components/GoogleMapView";
 import { ProgressBar } from "@/components/ProgressBar";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-
-// Leaflet requires window — lazy-load to skip SSR and eliminate the window-not-defined error
-const GymMap = lazy(() =>
-  import("@/components/GymMap").then((m) => ({ default: m.GymMap }))
-);
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -62,13 +57,7 @@ function HomePage() {
         percentage={percentage}
         loggedOut={!isAuthed}
       />
-      <Suspense fallback={
-        <div className="rounded-xl border border-border bg-muted/30 flex items-center justify-center" style={{ height: '50vh', minHeight: '350px' }}>
-          <Loader2 className="w-6 h-6 animate-spin text-primary" />
-        </div>
-      }>
-        <GymMap locations={locations} isVisited={isVisited} onToggleVisit={handleToggle} />
-      </Suspense>
+      <GoogleMapView locations={locations} isVisited={isVisited} onToggleVisit={handleToggle} />
     </main>
   );
 }

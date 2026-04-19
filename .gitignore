@@ -7,20 +7,30 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
+
+# Build output
 dist
 dist-ssr
 .output
 .vinxi
-.tanstack/**
 .nitro
+
+# TanStack / Vite cache
+.tanstack/**
 *.local
+
+# Environment — NEVER commit secrets
+.env
+.env.*
+!.env.example
 
 # Wrangler / Cloudflare
 .wrangler/
 .dev.vars
 
-# Editor directories and files
+# Editor
 .vscode/*
 !.vscode/extensions.json
 .idea
@@ -30,3 +40,23 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# ── Tests (internal use only) ──────────────────────────────────────────────
+tests/
+test-results/
+playwright-report/
+playwright.config.ts
+.playwright-mcp/
+
+# ── Dev / internal scripts and data ───────────────────────────────────────
+scripts/raw/
+scripts/generate-seed.mjs
+
+# ── Internal tooling / AI assistant config ────────────────────────────────
+.claude/
+docs/superpowers/
+
+# ── Root-level screenshots (dev artefacts) ────────────────────────────────
+desktop-home.png
+mobile-home.png
+mobile-home-v2.png

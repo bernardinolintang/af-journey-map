@@ -1,0 +1,57 @@
+import { useMemo } from 'react';
+import type { Location } from '@/hooks/use-locations';
+
+interface RegionStatsProps {
+  locations: Location[];
+  isVisited: (id: string) => boolean;
+}
+
+export function RegionStats({ locations, isVisited }: RegionStatsProps) {
+  const stats = useMemo(() => {
+    const map: Record<string, { total: number; visited: number }> = {};
+    for (const loc of locations) {
+      const r = loc.region || 'Other';
+      if (!map[r]) map[r] = { total: 0, visited: 0 };
+      map[r].total++;
+      if (isVisited(loc.id)) map[r].visited++;
+    }
+    return Object.entries(map)
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([region, { total, visited }]) => ({
+        region,
+        total,
+        visited,
+        pct: total > 0 ? Math.round((visited / total) * 100) : 0,
+      }));
+  }, [locations, isVisited]);
+
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+      {stats.map(({ region, total, visited, pct }) => (
+        <div
+          key={region}
+          className="bg-card border border-border rounded-xl px-3 py-2.5 flex flex-col gap-1.5"
+        >
+          <div className="flex items-center justify-between gap-1">
+            <span className="text-xs font-semibold text-foreground truncate">{region}</span>
+            <span className="text-[10px] font-bold text-primary shrink-0">{pct}%</span>
+          </div>
+          <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+            <div
+              className="h-full rounded-full transition-all duration-700"
+              style={{
+                width: `${pct}%`,
+                background: pct === 100
+                  ? 'oklch(0.72 0.17 55)'
+                  : 'oklch(0.52 0.24 295)',
+              }}
+            />
+          </div>
+          <p className="text-[10px] text-muted-foreground">
+            {visited} / {total}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+}

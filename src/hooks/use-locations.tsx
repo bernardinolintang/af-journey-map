@@ -82,6 +82,7 @@ export function useLocations() {
   };
 
   const isVisited = (locationId: string) => visits.some(v => v.location_id === locationId);
+  const getVisit = (locationId: string) => visits.find(v => v.location_id === locationId);
   const visitedCount = visits.length;
   const totalCount = locations.length;
   const percentage = totalCount > 0 ? Math.round((visitedCount / totalCount) * 100) : 0;
@@ -92,6 +93,7 @@ export function useLocations() {
     loading,
     toggleVisit,
     isVisited,
+    getVisit,
     visitedCount,
     totalCount,
     percentage,

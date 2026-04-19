@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router';
-import { MapPin, Trophy, LogIn } from 'lucide-react';
+import { MapPin, Trophy, LogIn, Share2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface ProgressBarProps {
   visited: number;
@@ -9,6 +10,20 @@ interface ProgressBarProps {
 }
 
 export function ProgressBar({ visited, total, percentage, loggedOut }: ProgressBarProps) {
+  const handleShare = async () => {
+    const text = `I've visited ${visited}/${total} Anytime Fitness outlets in Singapore (${percentage}%)! 🏋️\n\nTrack your own journey → https://af-tracker.sg`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ text });
+      } else {
+        await navigator.clipboard.writeText(text);
+        toast('Copied to clipboard!', { description: 'Share your progress anywhere.' });
+      }
+    } catch {
+      // user cancelled share — ignore
+    }
+  };
+
   if (loggedOut) {
     return (
       <div className="bg-card border border-border rounded-xl p-4 flex items-center justify-between gap-3">
@@ -41,9 +56,17 @@ export function ProgressBar({ visited, total, percentage, loggedOut }: ProgressB
             <span className="text-muted-foreground"> / {total} outlets visited</span>
           </span>
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           {percentage === 100 && <Trophy className="w-4 h-4 text-af-orange" />}
           <span className="text-sm font-bold text-primary">{percentage}%</span>
+          <button
+            type="button"
+            onClick={handleShare}
+            className="w-7 h-7 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
+            title="Share your progress"
+          >
+            <Share2 className="w-3.5 h-3.5" />
+          </button>
         </div>
       </div>
       <div className="h-3 bg-muted rounded-full overflow-hidden">

@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useLocations } from "@/hooks/use-locations";
 import { GoogleMapView } from "@/components/GoogleMapView";
 import { ProgressBar } from "@/components/ProgressBar";
+import { RegionStats } from "@/components/RegionStats";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -19,6 +20,7 @@ function HomePage() {
   const navigate = useNavigate();
   const {
     locations,
+    visits,
     loading,
     toggleVisit,
     isVisited,
@@ -51,16 +53,24 @@ function HomePage() {
 
   return (
     <main className="flex flex-col" style={{ height: 'calc(100svh - 60px)' }}>
-      <div className="px-4 py-3 max-w-7xl mx-auto w-full">
+      <div className="px-4 pt-3 pb-2 max-w-7xl mx-auto w-full space-y-2">
         <ProgressBar
           visited={visitedCount}
           total={totalCount}
           percentage={percentage}
           loggedOut={!isAuthed}
         />
+        {isAuthed && locations.length > 0 && (
+          <RegionStats locations={locations} isVisited={isVisited} />
+        )}
       </div>
       <div className="flex-1 px-4 pb-4 min-h-0">
-        <GoogleMapView locations={locations} isVisited={isVisited} onToggleVisit={handleToggle} />
+        <GoogleMapView
+          locations={locations}
+          visits={visits}
+          isVisited={isVisited}
+          onToggleVisit={handleToggle}
+        />
       </div>
     </main>
   );

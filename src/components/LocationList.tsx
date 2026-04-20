@@ -64,7 +64,7 @@ export function LocationList({ locations, isVisited, onToggleVisit }: LocationLi
             placeholder="Search outlets..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full bg-card border border-border rounded-lg pl-9 pr-4 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+            className="w-full bg-card border border-border rounded-lg pl-9 pr-4 py-2 text-base sm:text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
           />
         </div>
         <div className="flex flex-wrap gap-1.5">
@@ -74,7 +74,7 @@ export function LocationList({ locations, isVisited, onToggleVisit }: LocationLi
               variant={filter === f ? 'secondary' : 'ghost'}
               size="sm"
               onClick={() => setFilter(f)}
-              className="capitalize text-sm"
+              className="capitalize text-sm sm:text-xs"
             >
               {f}
             </Button>
@@ -83,7 +83,7 @@ export function LocationList({ locations, isVisited, onToggleVisit }: LocationLi
       </div>
 
       {/* Result count */}
-      <p className="text-sm text-muted-foreground px-1">
+      <p className="text-sm sm:text-xs text-muted-foreground px-1">
         Showing <span className="font-medium text-foreground">{filtered.length}</span> of{' '}
         <span className="font-medium text-foreground">{locations.length}</span> outlets
       </p>

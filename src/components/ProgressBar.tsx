@@ -273,7 +273,7 @@ export function ProgressBar({ visited, total, percentage, loggedOut, locations, 
             </div>
 
             {/* Actions */}
-            <div className="flex gap-2 px-4 pb-4">
+            <div className="flex gap-2 px-4 pb-2">
               <button
                 type="button"
                 onClick={handleCopyImage}
@@ -290,8 +290,25 @@ export function ProgressBar({ visited, total, percentage, loggedOut, locations, 
                 <Download className="w-4 h-4" />
               </button>
             </div>
+            <div className="px-4 pb-4">
+              <button
+                type="button"
+                onClick={async () => {
+                  await handleCopyImage();
+                  const text = encodeURIComponent(`I've visited ${visited}/${total} Anytime Fitness outlets in Singapore (${percentage}%)! 🏋️ Track yours → https://af-tracker.sg`);
+                  window.open(`https://t.me/share/url?url=https://af-tracker.sg&text=${text}`, '_blank');
+                }}
+                className="w-full flex items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold transition-all text-white hover:opacity-90"
+                style={{ background: '#229ED9' }}
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.19 13.981l-2.965-.924c-.643-.204-.657-.643.136-.953l11.57-4.461c.537-.194 1.006.131.963.578z"/>
+                </svg>
+                Share to Telegram
+              </button>
+            </div>
             <p className="text-center text-[11px] text-muted-foreground pb-4">
-              Copy → paste into WhatsApp, Telegram, Instagram…
+              Image copied — just paste it into the Telegram chat
             </p>
           </div>
         </div>

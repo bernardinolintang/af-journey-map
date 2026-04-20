@@ -844,6 +844,7 @@ export function GoogleMapView({ locations, visits, isVisited, onToggleVisit, reg
           mapTypeId={mode === 'roadmap' ? 'roadmap' : 'satellite'}
           tilt={mode === '3d' ? 60 : 0}
           disableDefaultUI
+          clickableIcons={false}
           gestureHandling="greedy"
           className="w-full h-full"
           style={{ width: '100%', height: '100%' }}

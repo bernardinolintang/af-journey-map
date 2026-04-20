@@ -11,6 +11,7 @@ import {
   Check, X, Map as MapIcon, Satellite, Box, Locate, Navigation,
   Search, BarChart2, X as CloseIcon, Plus, Minus,
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string;
 const MAP_ID = (import.meta.env.VITE_GOOGLE_MAPS_MAP_ID as string) || undefined;
@@ -409,7 +410,7 @@ function MapLegend() {
   return (
     <div style={{
       position: 'absolute',
-      bottom: 16,
+      bottom: 104,
       left: 12,
       zIndex: 10,
       background: 'rgba(0,0,0,0.70)',
@@ -556,7 +557,10 @@ function MapInner({ locations, visits, isVisited, onToggleVisit, mode, onModeCha
 
   // GPS near me
   const handleNearMe = useCallback(() => {
-    if (!navigator.geolocation) return;
+    if (!navigator.geolocation) {
+      toast.error('GPS not supported', { description: 'Your browser does not support location access.' });
+      return;
+    }
     setGpsLoading(true);
     navigator.geolocation.getCurrentPosition(
       pos => {
@@ -577,8 +581,23 @@ function MapInner({ locations, visits, isVisited, onToggleVisit, mode, onModeCha
           setSelectedId(nearest.id);
         }, 800);
       },
-      () => setGpsLoading(false),
-      { enableHighAccuracy: true, timeout: 8000 }
+      err => {
+        setGpsLoading(false);
+        if (err.code === 1) {
+          toast.error('Location access denied', {
+            description: 'Allow location access in your browser settings, then try again.',
+          });
+        } else if (err.code === 3) {
+          toast.error('Location timed out', {
+            description: 'Could not get your location in time. Try again in a moment.',
+          });
+        } else {
+          toast.error('Could not get your location', {
+            description: 'Make sure location is enabled on your device.',
+          });
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
   }, [map, locations, isVisited]);
 

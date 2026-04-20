@@ -524,6 +524,33 @@ function MapInner({ locations, visits, isVisited, onToggleVisit, mode, onModeCha
   const selectedLoc = locations.find(l => l.id === selectedId);
   const selectedVisit = visits.find(v => v.location_id === selectedId);
 
+  const [placePhotoUrl, setPlacePhotoUrl] = useState<string | null>(null);
+
+  // Fetch Google Maps business photo when an outlet is selected
+  useEffect(() => {
+    if (!map || !selectedLoc) {
+      setPlacePhotoUrl(null);
+      return;
+    }
+    const query = /^anytime fitness/i.test(selectedLoc.name)
+      ? selectedLoc.name
+      : `Anytime Fitness ${selectedLoc.name}`;
+    const service = new google.maps.places.PlacesService(map as google.maps.Map);
+    service.findPlaceFromQuery(
+      { query: `${query} Singapore`, fields: ['photos'] },
+      (results, status) => {
+        if (
+          status === google.maps.places.PlacesServiceStatus.OK &&
+          results?.[0]?.photos?.[0]
+        ) {
+          setPlacePhotoUrl(results[0].photos[0].getUrl({ maxWidth: 280, maxHeight: 130 }));
+        } else {
+          setPlacePhotoUrl(null);
+        }
+      },
+    );
+  }, [map, selectedLoc]);
+
   // Close popup when clicking the map background
   useEffect(() => {
     if (!map) return;
@@ -686,51 +713,84 @@ function MapInner({ locations, visits, isVisited, onToggleVisit, mode, onModeCha
           headerDisabled
         >
           <div style={{
-            minWidth: 210, maxWidth: 252,
+            width: 280,
             background: '#12172a', borderRadius: 12,
-            padding: '12px 12px 10px',
+            overflow: 'hidden',
             fontFamily: '"DM Sans", system-ui, sans-serif',
           }}>
-            <p style={{ fontWeight: 700, fontSize: 13, color: '#f0f2ff', marginBottom: 3, lineHeight: 1.35 }}>
-              {selectedLoc.name}
-            </p>
-            <p style={{ fontSize: 11, color: '#8896b3', marginBottom: 6, lineHeight: 1.5 }}>
-              {selectedLoc.address}
-            </p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
-              {selectedLoc.region && (
-                <span style={{
-                  fontSize: 10, background: 'rgba(124,66,237,0.18)', color: '#c4a8ff',
-                  border: '1px solid rgba(124,66,237,0.3)', padding: '2px 8px',
-                  borderRadius: 99, fontWeight: 600,
-                }}>{selectedLoc.region}</span>
-              )}
-              {selectedVisit && (
-                <span style={{
-                  fontSize: 10, color: '#8896b3',
-                }}>
-                  ✓ {new Date(selectedVisit.visited_at).toLocaleDateString('en-SG', {
-                    day: 'numeric', month: 'short', year: 'numeric',
-                  })}
-                </span>
-              )}
+            {/* Business photo from Google Maps */}
+            {placePhotoUrl && (
+              <div style={{ position: 'relative', width: '100%', height: 130 }}>
+                <img
+                  src={placePhotoUrl}
+                  alt={selectedLoc.name}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                />
+                <div style={{
+                  position: 'absolute', inset: 0,
+                  background: 'linear-gradient(to bottom, transparent 50%, rgba(18,23,42,0.85) 100%)',
+                }} />
+              </div>
+            )}
+
+            {/* Details */}
+            <div style={{ padding: '10px 12px 12px' }}>
+              <p style={{ fontWeight: 700, fontSize: 13, color: '#f0f2ff', marginBottom: 3, lineHeight: 1.35 }}>
+                {selectedLoc.name}
+              </p>
+              <p style={{ fontSize: 11, color: '#8896b3', marginBottom: 7, lineHeight: 1.5 }}>
+                {selectedLoc.address}
+              </p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
+                {selectedLoc.region && (
+                  <span style={{
+                    fontSize: 10, background: 'rgba(124,66,237,0.18)', color: '#c4a8ff',
+                    border: '1px solid rgba(124,66,237,0.3)', padding: '2px 8px',
+                    borderRadius: 99, fontWeight: 600,
+                  }}>{selectedLoc.region}</span>
+                )}
+                {selectedVisit && (
+                  <span style={{ fontSize: 10, color: '#8896b3' }}>
+                    ✓ {new Date(selectedVisit.visited_at).toLocaleDateString('en-SG', {
+                      day: 'numeric', month: 'short', year: 'numeric',
+                    })}
+                  </span>
+                )}
+              </div>
+
+              {/* Open in Google Maps */}
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent((/^anytime fitness/i.test(selectedLoc.name) ? selectedLoc.name : `Anytime Fitness ${selectedLoc.name}`) + ' Singapore')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  gap: 6, borderRadius: 8, padding: '8px 12px', fontSize: 12, fontWeight: 600,
+                  background: 'rgba(255,255,255,0.07)', color: '#a8b4d0',
+                  textDecoration: 'none', marginBottom: 6, boxSizing: 'border-box',
+                }}
+              >
+                <MapIcon style={{ width: 13, height: 13 }} /> Open in Google Maps
+              </a>
+
+              {/* Visit toggle */}
+              <button
+                type="button"
+                onClick={() => { onToggleVisit(selectedLoc.id); setSelectedId(null); }}
+                style={{
+                  width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  gap: 6, borderRadius: 8, padding: '9px 12px', fontSize: 12, fontWeight: 600,
+                  border: 'none', cursor: 'pointer',
+                  background: isVisited(selectedLoc.id) ? 'rgba(255,255,255,0.08)' : '#7C42ED',
+                  color: isVisited(selectedLoc.id) ? '#8896b3' : '#fff',
+                }}
+              >
+                {isVisited(selectedLoc.id)
+                  ? <><X style={{ width: 13, height: 13 }} /> Unmark Visit</>
+                  : <><Check style={{ width: 13, height: 13 }} /> Mark as Visited</>
+                }
+              </button>
             </div>
-            <button
-              type="button"
-              onClick={() => { onToggleVisit(selectedLoc.id); setSelectedId(null); }}
-              style={{
-                width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                gap: 6, borderRadius: 8, padding: '9px 12px', fontSize: 12, fontWeight: 600,
-                border: 'none', cursor: 'pointer',
-                background: isVisited(selectedLoc.id) ? 'rgba(255,255,255,0.08)' : '#7C42ED',
-                color: isVisited(selectedLoc.id) ? '#8896b3' : '#fff',
-              }}
-            >
-              {isVisited(selectedLoc.id)
-                ? <><X style={{ width: 13, height: 13 }} /> Unmark Visit</>
-                : <><Check style={{ width: 13, height: 13 }} /> Mark as Visited</>
-              }
-            </button>
           </div>
         </InfoWindow>
       )}
@@ -830,7 +890,7 @@ export function GoogleMapView({ locations, visits, isVisited, onToggleVisit, reg
           to   { opacity: 1; transform: translate(-50%, -50%); }
         }
       `}</style>
-      <APIProvider apiKey={API_KEY}>
+      <APIProvider apiKey={API_KEY} libraries={['places']}>
         <Map
           {...mapProps}
           defaultBounds={SG_BOUNDS}

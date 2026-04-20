@@ -606,6 +606,7 @@ function MapInner({ locations, visits, isVisited, onToggleVisit, mode, onModeCha
     map?.panTo({ lat: loc.lat, lng: loc.lng });
     map?.setZoom(16);
     setSelectedId(loc.id);
+    setStatsOpen(false);
   }, [map]);
 
   // Dismiss nearest highlight after 8s
@@ -660,6 +661,7 @@ function MapInner({ locations, visits, isVisited, onToggleVisit, mode, onModeCha
           position={{ lat: loc.lat, lng: loc.lng }}
           onClick={() => {
             setSelectedId(loc.id === selectedId ? null : loc.id);
+            setStatsOpen(false);
             dismissOnboarding();
           }}
           zIndex={loc.id === nearestId ? 10 : isVisited(loc.id) ? 2 : 1}

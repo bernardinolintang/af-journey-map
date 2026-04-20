@@ -371,3 +371,11 @@
   transform: scale(1.15);
   transition: transform 0.15s ease;
 }
+
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}

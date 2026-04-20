@@ -705,13 +705,6 @@ function MapInner({ locations, visits, isVisited, onToggleVisit, mode, onModeCha
                   borderRadius: 99, fontWeight: 600,
                 }}>{selectedLoc.region}</span>
               )}
-              {selectedLoc.is_24h && (
-                <span style={{
-                  fontSize: 10, background: 'rgba(245,166,35,0.15)', color: '#F5A623',
-                  border: '1px solid rgba(245,166,35,0.35)', padding: '2px 8px',
-                  borderRadius: 99, fontWeight: 600,
-                }}>24h</span>
-              )}
               {selectedVisit && (
                 <span style={{
                   fontSize: 10, color: '#8896b3',

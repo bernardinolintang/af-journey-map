@@ -1,6 +1,7 @@
 import { Link, useLocation } from '@tanstack/react-router';
 import { useAuth } from '@/hooks/use-auth';
 import { useTheme } from '@/hooks/use-theme';
+import { useProfile } from '@/hooks/use-profile';
 import { LogOut, Map, List, LogIn, Sun, Moon } from 'lucide-react';
 import { useState } from 'react';
 import {
@@ -16,10 +17,14 @@ import {
 
 export function Header() {
   const { user, signOut } = useAuth();
+  const { profile } = useProfile();
   const location = useLocation();
   const { theme, toggleTheme } = useTheme();
   const path = location.pathname;
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+
+  const initials = (profile?.display_name ?? user?.email ?? '?')
+    .split(/[\s@]/)[0].slice(0, 2).toUpperCase();
 
   return (
     <header className="header-root sticky top-0 z-50">
@@ -61,6 +66,25 @@ export function Header() {
 
           {user ? (
             <>
+              {/* Avatar → profile page */}
+              <Link
+                to="/profile"
+                className={`nav-btn ${path === '/profile' ? 'nav-btn-active' : 'nav-btn-ghost'} p-0.5`}
+                title="Your profile"
+              >
+                {profile?.avatar_url ? (
+                  <img
+                    src={profile.avatar_url}
+                    alt="Avatar"
+                    className="w-7 h-7 rounded-full object-cover border border-border"
+                  />
+                ) : (
+                  <div className="w-7 h-7 rounded-full bg-primary/20 border border-border flex items-center justify-center text-[10px] font-bold text-primary">
+                    {initials}
+                  </div>
+                )}
+              </Link>
+
               <button
                 type="button"
                 onClick={() => setShowLogoutDialog(true)}

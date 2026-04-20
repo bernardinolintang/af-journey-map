@@ -136,20 +136,20 @@ export function LocationList({ locations, isVisited, onToggleVisit }: LocationLi
               </div>
 
               {/* Mobile card */}
-              <div className="sm:hidden flex items-center gap-3 px-4 py-3.5">
-                <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
+              <div className="sm:hidden flex items-center gap-3 px-4 py-3">
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
                   visited
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-muted text-muted-foreground'
                 }`}>
-                  {visited ? <Check className="w-5 h-5" /> : <MapPin className="w-5 h-5" />}
+                  {visited ? <Check className="w-4 h-4" /> : <MapPin className="w-4 h-4" />}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="font-medium text-base truncate">{loc.name}</p>
-                  <p className="text-sm text-muted-foreground truncate">{loc.address}</p>
+                  <p className="font-medium text-sm truncate">{loc.name}</p>
+                  <p className="text-xs text-muted-foreground truncate">{loc.address}</p>
                 </div>
                 {loc.region && (
-                  <span className="text-xs bg-secondary text-secondary-foreground px-2.5 py-1 rounded-full shrink-0">
+                  <span className="text-[10px] bg-secondary text-secondary-foreground px-2 py-0.5 rounded-full shrink-0">
                     {loc.region}
                   </span>
                 )}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/use-auth';
 
@@ -13,25 +13,24 @@ export function useProfile() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = useCallback(async () => {
+  // Read directly from user metadata — no extra table needed
+  useEffect(() => {
     if (!user) { setProfile(null); setLoading(false); return; }
-    const { data } = await supabase
-      .from('profiles')
-      .select('id, display_name, avatar_url')
-      .eq('id', user.id)
-      .single();
-    setProfile(data ?? { id: user.id, display_name: null, avatar_url: null });
+    setProfile({
+      id: user.id,
+      display_name: (user.user_metadata?.display_name as string) ?? null,
+      avatar_url: (user.user_metadata?.avatar_url as string) ?? null,
+    });
     setLoading(false);
   }, [user]);
 
-  useEffect(() => { fetchProfile(); }, [fetchProfile]);
-
   const updateDisplayName = async (name: string) => {
-    if (!user) return { error: new Error('Not logged in') };
-    const { error } = await supabase
-      .from('profiles')
-      .upsert({ id: user.id, display_name: name.trim(), updated_at: new Date().toISOString() });
-    if (!error) setProfile(p => p ? { ...p, display_name: name.trim() } : p);
+    const { data, error } = await supabase.auth.updateUser({
+      data: { display_name: name.trim() },
+    });
+    if (!error && data.user) {
+      setProfile(p => p ? { ...p, display_name: name.trim() } : p);
+    }
     return { error };
   };
 
@@ -46,7 +45,7 @@ export function useProfile() {
 
     const { data } = supabase.storage.from('avatars').getPublicUrl(path);
     const url = `${data.publicUrl}?t=${Date.now()}`;
-    await supabase.from('profiles').upsert({ id: user.id, avatar_url: url, updated_at: new Date().toISOString() });
+    await supabase.auth.updateUser({ data: { avatar_url: url } });
     setProfile(p => p ? { ...p, avatar_url: url } : p);
     return { error: null, url };
   };
@@ -56,5 +55,5 @@ export function useProfile() {
     return { error };
   };
 
-  return { profile, loading, updateDisplayName, uploadAvatar, updatePassword, refetch: fetchProfile };
+  return { profile, loading, updateDisplayName, uploadAvatar, updatePassword };
 }

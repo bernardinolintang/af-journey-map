@@ -17,6 +17,7 @@ function ProfilePage() {
   const navigate = useNavigate();
   const { profile, loading, updateDisplayName, uploadAvatar, updatePassword } = useProfile();
 
+
   const [name, setName] = useState('');
   const [savingName, setSavingName] = useState(false);
 

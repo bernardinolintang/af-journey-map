@@ -74,7 +74,7 @@ export function LocationList({ locations, isVisited, onToggleVisit }: LocationLi
               variant={filter === f ? 'secondary' : 'ghost'}
               size="sm"
               onClick={() => setFilter(f)}
-              className="capitalize text-xs"
+              className="capitalize text-sm"
             >
               {f}
             </Button>
@@ -83,7 +83,7 @@ export function LocationList({ locations, isVisited, onToggleVisit }: LocationLi
       </div>
 
       {/* Result count */}
-      <p className="text-xs text-muted-foreground px-1">
+      <p className="text-sm text-muted-foreground px-1">
         Showing <span className="font-medium text-foreground">{filtered.length}</span> of{' '}
         <span className="font-medium text-foreground">{locations.length}</span> outlets
       </p>
@@ -136,8 +136,8 @@ export function LocationList({ locations, isVisited, onToggleVisit }: LocationLi
               </div>
 
               {/* Mobile card */}
-              <div className="sm:hidden flex items-center gap-3 px-4 py-3.5">
-                <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
+              <div className="sm:hidden flex items-center gap-3 px-4 py-4">
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                   visited
                     ? 'bg-primary text-primary-foreground'
                     : 'bg-muted text-muted-foreground'
@@ -145,11 +145,11 @@ export function LocationList({ locations, isVisited, onToggleVisit }: LocationLi
                   {visited ? <Check className="w-5 h-5" /> : <MapPin className="w-5 h-5" />}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="font-medium text-base truncate">{loc.name}</p>
-                  <p className="text-sm text-muted-foreground truncate">{loc.address}</p>
+                  <p className="font-semibold text-base leading-snug truncate">{loc.name}</p>
+                  <p className="text-sm text-muted-foreground leading-snug truncate mt-0.5">{loc.address}</p>
                 </div>
                 {loc.region && (
-                  <span className="text-xs bg-secondary text-secondary-foreground px-2.5 py-1 rounded-full shrink-0">
+                  <span className="text-xs font-medium bg-secondary text-secondary-foreground px-2.5 py-1 rounded-full shrink-0 whitespace-nowrap">
                     {loc.region}
                   </span>
                 )}

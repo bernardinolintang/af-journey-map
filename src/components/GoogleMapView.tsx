@@ -506,6 +506,52 @@ function OnboardingTooltip({ onDismiss }: { onDismiss: () => void }) {
 }
 
 // ---------------------------------------------------------------------------
+// Isolated note field — own state so typing never re-renders MapInner
+// ---------------------------------------------------------------------------
+function NoteField({ locationId, initialNote, onSave }: {
+  locationId: string;
+  initialNote: string;
+  onSave: (note: string) => void;
+}) {
+  const [text, setText] = useState(initialNote);
+  const unsaved = text !== initialNote;
+
+  return (
+    <div style={{ marginTop: 8 }}>
+      <textarea
+        value={text}
+        onChange={e => setText(e.target.value)}
+        placeholder="Add a note..."
+        rows={2}
+        style={{
+          width: '100%', background: 'rgba(255,255,255,0.06)',
+          border: '1px solid rgba(255,255,255,0.10)', borderRadius: 8,
+          padding: '7px 10px', fontSize: 11, color: '#c4cfee',
+          resize: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
+          outline: 'none', lineHeight: 1.5, display: 'block',
+        }}
+        onFocus={e => { e.currentTarget.style.borderColor = 'rgba(124,66,237,0.5)'; }}
+        onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.10)'; }}
+      />
+      {unsaved && (
+        <button
+          type="button"
+          onClick={() => onSave(text)}
+          style={{
+            marginTop: 5, width: '100%', display: 'flex', alignItems: 'center',
+            justifyContent: 'center', borderRadius: 8, padding: '7px 12px',
+            fontSize: 11, fontWeight: 600, border: 'none', cursor: 'pointer',
+            background: 'rgba(124,66,237,0.25)', color: '#c4a8ff',
+          }}
+        >
+          Save note
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
 // Main inner map component (must be inside APIProvider + Map)
 // ---------------------------------------------------------------------------
 interface MapInnerProps {
@@ -523,7 +569,6 @@ function MapInner({ locations, visits, isVisited, onToggleVisit, mode, onModeCha
   const { isFavourite, toggleFavourite, getNote, saveNote, isAuthed: extrasAuthed } = useOutletExtras();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [mapFilter, setMapFilter] = useState<MapFilter>('all');
-  const [noteText, setNoteText] = useState('');
   const [userPos, setUserPos] = useState<{ lat: number; lng: number } | null>(null);
   const [nearestId, setNearestId] = useState<string | null>(null);
   const [gpsLoading, setGpsLoading] = useState(false);
@@ -535,12 +580,6 @@ function MapInner({ locations, visits, isVisited, onToggleVisit, mode, onModeCha
 
   const selectedLoc = locations.find(l => l.id === selectedId);
   const selectedVisit = visits.find(v => v.location_id === selectedId);
-
-  // Reset note field when a different outlet is opened
-  useEffect(() => {
-    if (selectedId) setNoteText(getNote(selectedId));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedId]);
 
   const [placePhotoUrl, setPlacePhotoUrl] = useState<string | null>(null);
 
@@ -843,39 +882,14 @@ function MapInner({ locations, visits, isVisited, onToggleVisit, mode, onModeCha
                 }
               </button>
 
-              {/* Notes */}
+              {/* Notes — isolated component so typing never re-renders MapInner */}
               {extrasAuthed && (
-                <div style={{ marginTop: 8 }}>
-                  <textarea
-                    value={noteText}
-                    onChange={e => setNoteText(e.target.value)}
-                    placeholder="Add a note..."
-                    rows={2}
-                    style={{
-                      width: '100%', background: 'rgba(255,255,255,0.06)',
-                      border: '1px solid rgba(255,255,255,0.10)', borderRadius: 8,
-                      padding: '7px 10px', fontSize: 11, color: '#c4cfee',
-                      resize: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
-                      outline: 'none', lineHeight: 1.5, display: 'block',
-                    }}
-                    onFocus={e => { e.currentTarget.style.borderColor = 'rgba(124,66,237,0.5)'; }}
-                    onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.10)'; }}
-                  />
-                  {noteText !== getNote(selectedLoc.id) && (
-                    <button
-                      type="button"
-                      onClick={() => saveNote(selectedLoc.id, noteText)}
-                      style={{
-                        marginTop: 5, width: '100%', display: 'flex', alignItems: 'center',
-                        justifyContent: 'center', gap: 5, borderRadius: 8, padding: '7px 12px',
-                        fontSize: 11, fontWeight: 600, border: 'none', cursor: 'pointer',
-                        background: 'rgba(124,66,237,0.25)', color: '#c4a8ff',
-                      }}
-                    >
-                      Save note
-                    </button>
-                  )}
-                </div>
+                <NoteField
+                  key={selectedLoc.id}
+                  locationId={selectedLoc.id}
+                  initialNote={getNote(selectedLoc.id)}
+                  onSave={(note) => saveNote(selectedLoc.id, note)}
+                />
               )}
             </div>
           </div>

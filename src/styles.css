@@ -134,6 +134,7 @@
 
   html {
     scroll-behavior: smooth;
+    overflow-x: hidden;
   }
 
   body {
@@ -142,6 +143,9 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+    /* Ensure full width with no accidental horizontal bleed */
+    max-width: 100vw;
   }
 }
 
@@ -179,6 +183,8 @@
 .app-root {
   position: relative;
   background-color: var(--background);
+  overflow-x: hidden;
+  width: 100%;
 }
 
 /* Gradient mesh: two soft glows give depth */

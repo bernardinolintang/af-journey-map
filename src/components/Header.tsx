@@ -33,7 +33,7 @@ export function Header() {
       {/* bottom gradient divider */}
       <div className="header-divider" />
 
-      <div className="mx-auto max-w-7xl flex items-center justify-between px-4 h-[3.75rem] relative">
+      <div className="mx-auto max-w-7xl flex items-center justify-between px-4 sm:px-6 h-[3.75rem] relative">
         {/* ── Logo ── */}
         <Link to="/" className="flex items-center gap-2.5 group select-none">
           <img

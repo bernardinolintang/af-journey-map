@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useLocations } from "@/hooks/use-locations";
+import { useOutletExtras } from "@/hooks/use-outlet-extras";
 import { LocationList } from "@/components/LocationList";
 import { ProgressBar } from "@/components/ProgressBar";
 import { Loader2 } from "lucide-react";
@@ -27,6 +28,7 @@ function ListPage() {
     percentage,
     isAuthed,
   } = useLocations();
+  const { isFavourite } = useOutletExtras();
 
   const handleToggle = async (id: string) => {
     const { requiresAuth } = await toggleVisit(id);
@@ -57,7 +59,7 @@ function ListPage() {
         percentage={percentage}
         loggedOut={!isAuthed}
       />
-      <LocationList locations={locations} isVisited={isVisited} onToggleVisit={handleToggle} />
+      <LocationList locations={locations} isVisited={isVisited} isFavourite={isFavourite} onToggleVisit={handleToggle} />
     </main>
   );
 }

@@ -35,7 +35,7 @@ export function Header() {
 
       <div className="mx-auto max-w-7xl flex items-center justify-between px-4 sm:px-6 h-[3.75rem] relative">
         {/* ── Logo ── */}
-        <Link to="/" className="flex items-center gap-2.5 group select-none">
+        <Link to="/" className="flex items-center gap-1.5 sm:gap-2.5 group select-none flex-shrink-0">
           <img
             src="/af-logo.png"
             alt="Anytime Fitness"
@@ -47,7 +47,7 @@ export function Header() {
         </Link>
 
         {/* ── Nav ── */}
-        <nav className="flex items-center gap-1">
+        <nav className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
           <NavLink to="/" active={path === '/'} icon={<Map className="w-4 h-4" />} label="Map" />
           <NavLink to="/list" active={path === '/list'} icon={<List className="w-4 h-4" />} label="List" />
 

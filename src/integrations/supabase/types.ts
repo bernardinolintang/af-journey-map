@@ -14,6 +14,38 @@ export type Database = {
   }
   public: {
     Tables: {
+      outlet_extras: {
+        Row: {
+          is_favourite: boolean
+          location_id: string
+          note: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          is_favourite?: boolean
+          location_id: string
+          note?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          is_favourite?: boolean
+          location_id?: string
+          note?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outlet_extras_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       locations: {
         Row: {
           address: string

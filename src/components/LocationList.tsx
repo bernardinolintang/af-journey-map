@@ -6,17 +6,19 @@ import { Button } from '@/components/ui/button';
 interface LocationListProps {
   locations: Location[];
   isVisited: (id: string) => boolean;
+  isFavourite: (id: string) => boolean;
   onToggleVisit: (id: string) => void;
 }
 
 type SortKey = 'name' | 'region' | 'visited';
 type SortDir = 'asc' | 'desc';
+type ListFilter = 'all' | 'visited' | 'unvisited' | 'favourites';
 
-export function LocationList({ locations, isVisited, onToggleVisit }: LocationListProps) {
+export function LocationList({ locations, isVisited, isFavourite, onToggleVisit }: LocationListProps) {
   const [search, setSearch] = useState('');
   const [sortKey, setSortKey] = useState<SortKey>('name');
   const [sortDir, setSortDir] = useState<SortDir>('asc');
-  const [filter, setFilter] = useState<'all' | 'visited' | 'unvisited'>('all');
+  const [filter, setFilter] = useState<ListFilter>('all');
 
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) {
@@ -41,6 +43,7 @@ export function LocationList({ locations, isVisited, onToggleVisit }: LocationLi
 
     if (filter === 'visited') result = result.filter(l => isVisited(l.id));
     if (filter === 'unvisited') result = result.filter(l => !isVisited(l.id));
+    if (filter === 'favourites') result = result.filter(l => isFavourite(l.id));
 
     result.sort((a, b) => {
       let cmp = 0;
@@ -51,7 +54,7 @@ export function LocationList({ locations, isVisited, onToggleVisit }: LocationLi
     });
 
     return result;
-  }, [locations, search, sortKey, sortDir, filter, isVisited]);
+  }, [locations, search, sortKey, sortDir, filter, isVisited, isFavourite]);
 
   return (
     <div className="space-y-4">
@@ -68,15 +71,20 @@ export function LocationList({ locations, isVisited, onToggleVisit }: LocationLi
           />
         </div>
         <div className="flex flex-wrap gap-1.5">
-          {(['all', 'visited', 'unvisited'] as const).map(f => (
+          {([
+            { key: 'all' as ListFilter, label: 'All' },
+            { key: 'visited' as ListFilter, label: 'Visited' },
+            { key: 'unvisited' as ListFilter, label: 'Unvisited' },
+            { key: 'favourites' as ListFilter, label: '★ Favourites' },
+          ]).map(({ key, label }) => (
             <Button
-              key={f}
-              variant={filter === f ? 'secondary' : 'ghost'}
+              key={key}
+              variant={filter === key ? 'secondary' : 'ghost'}
               size="sm"
-              onClick={() => setFilter(f)}
-              className="capitalize text-xs"
+              onClick={() => setFilter(key)}
+              className={`text-xs ${key === 'favourites' && filter !== 'favourites' ? 'text-amber-400' : ''}`}
             >
-              {f}
+              {label}
             </Button>
           ))}
         </div>
@@ -120,6 +128,7 @@ export function LocationList({ locations, isVisited, onToggleVisit }: LocationLi
               <div className="hidden sm:grid grid-cols-[1fr_1fr_120px_80px] gap-2 items-center px-4 py-3">
                 <div className="flex items-center gap-2">
                   <MapPin className={`w-4 h-4 shrink-0 ${visited ? 'text-primary' : 'text-muted-foreground'}`} />
+                  {isFavourite(loc.id) && <span className="text-amber-400 text-xs shrink-0">★</span>}
                   <span className="font-medium text-sm truncate">{loc.name}</span>
                 </div>
                 <span className="text-xs text-muted-foreground truncate">{loc.address}</span>
@@ -145,7 +154,10 @@ export function LocationList({ locations, isVisited, onToggleVisit }: LocationLi
                   {visited ? <Check className="w-4 h-4" /> : <MapPin className="w-4 h-4" />}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="font-medium text-sm truncate">{loc.name}</p>
+                  <p className="font-medium text-sm truncate">
+                    {isFavourite(loc.id) && <span className="text-amber-400 mr-1">★</span>}
+                    {loc.name}
+                  </p>
                   <p className="text-xs text-muted-foreground truncate">{loc.address}</p>
                 </div>
                 {loc.region && (
@@ -172,7 +184,7 @@ export function LocationList({ locations, isVisited, onToggleVisit }: LocationLi
           </div>
           {(search || filter !== 'all') && (
             <button
-              onClick={() => { setSearch(''); setFilter('all'); }}
+              onClick={() => { setSearch(''); setFilter('all' as ListFilter); }}
               className="text-xs text-primary hover:underline font-medium"
             >
               Clear filters

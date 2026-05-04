@@ -7,6 +7,7 @@ import {
   InfoWindow,
 } from '@vis.gl/react-google-maps';
 import type { Location, Visit } from '@/hooks/use-locations';
+import { useOutletExtras } from '@/hooks/use-outlet-extras';
 import {
   Check, X, Map as MapIcon, Satellite, Box, Locate, Navigation,
   Search, BarChart2, X as CloseIcon, Plus, Minus,
@@ -111,7 +112,7 @@ function UserDot() {
 }
 
 type MapMode = 'roadmap' | 'satellite' | '3d';
-type MapFilter = 'all' | 'visited' | 'unvisited';
+type MapFilter = 'all' | 'visited' | 'unvisited' | 'favourites';
 
 // ---------------------------------------------------------------------------
 // Map controls bar (bottom-center)
@@ -136,24 +137,29 @@ function MapControls({
       style={{ maxWidth: 'calc(100vw - 16px)' }}>
       {/* Filter row */}
       <div className="flex items-center bg-black/70 backdrop-blur-md border border-white/10 rounded-xl p-1 gap-0.5 shadow-2xl pointer-events-auto">
-        {(['all', 'visited', 'unvisited'] as const).map(f => (
+        {([
+          { key: 'all' as MapFilter, label: 'All' },
+          { key: 'visited' as MapFilter, label: 'Visited' },
+          { key: 'unvisited' as MapFilter, label: 'Unvisited' },
+          { key: 'favourites' as MapFilter, label: '★' },
+        ]).map(({ key, label }) => (
           <button
-            key={f}
+            key={key}
             type="button"
-            onClick={() => onFilterChange(f)}
-            className={`px-2 py-1 rounded-lg text-[11px] font-semibold transition-all capitalize ${
-              mapFilter === f
-                ? 'bg-violet-600 text-white'
-                : 'text-white/50 hover:text-white hover:bg-white/10'
+            onClick={() => onFilterChange(key)}
+            className={`px-2 py-1 rounded-lg text-[11px] font-semibold transition-all ${
+              mapFilter === key
+                ? key === 'favourites' ? 'bg-amber-500 text-white' : 'bg-violet-600 text-white'
+                : key === 'favourites' ? 'text-amber-400/70 hover:text-amber-300 hover:bg-white/10' : 'text-white/50 hover:text-white hover:bg-white/10'
             }`}
-          >{f}</button>
+          >{label}</button>
         ))}
       </div>
 
       {/* Main controls row */}
-      <div className="flex items-center gap-1 pointer-events-auto overflow-x-auto scrollbar-none max-w-full">
+      <div className="flex items-center gap-0.5 sm:gap-1 pointer-events-auto overflow-x-auto scrollbar-none max-w-full">
         {/* Map type */}
-        <div className="flex items-center bg-black/70 backdrop-blur-md border border-white/10 rounded-xl p-1 gap-0.5 shadow-2xl">
+        <div className="flex items-center bg-black/70 backdrop-blur-md border border-white/10 rounded-xl p-0.5 sm:p-1 gap-0.5 shadow-2xl">
           {([
             { id: 'roadmap' as MapMode, icon: <MapIcon className="w-3.5 h-3.5" />, label: 'Map' },
             { id: 'satellite' as MapMode, icon: <Satellite className="w-3.5 h-3.5" />, label: 'Sat' },
@@ -163,7 +169,7 @@ function MapControls({
               key={id}
               type="button"
               onClick={() => onModeChange(id)}
-              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              className={`flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${
                 mode === id ? 'bg-violet-600 text-white' : 'text-white/60 hover:text-white hover:bg-white/10'
               }`}
             >
@@ -177,7 +183,7 @@ function MapControls({
           <button
             type="button"
             onClick={onZoomIn}
-            className="w-9 h-[1.125rem] flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-all border-b border-white/10"
+            className="w-8 sm:w-9 h-[1.125rem] flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-all border-b border-white/10"
             title="Zoom in"
           >
             <Plus className="w-3 h-3" />
@@ -185,7 +191,7 @@ function MapControls({
           <button
             type="button"
             onClick={onZoomOut}
-            className="w-9 h-[1.125rem] flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-all"
+            className="w-8 sm:w-9 h-[1.125rem] flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition-all"
             title="Zoom out"
           >
             <Minus className="w-3 h-3" />
@@ -197,7 +203,7 @@ function MapControls({
           type="button"
           onClick={onNearMe}
           disabled={gpsLoading}
-          className="h-9 px-3 flex items-center gap-1.5 bg-black/70 backdrop-blur-md border border-white/10 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all shadow-2xl text-xs font-semibold disabled:opacity-50"
+          className="h-8 sm:h-9 px-2 sm:px-3 flex items-center gap-1.5 bg-black/70 backdrop-blur-md border border-white/10 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all shadow-2xl text-xs font-semibold disabled:opacity-50"
           title="Find nearest unvisited outlet"
         >
           <Navigation className={`w-3.5 h-3.5 ${gpsLoading ? 'animate-pulse' : ''}`} />
@@ -208,7 +214,7 @@ function MapControls({
         <button
           type="button"
           onClick={onToggleSearch}
-          className="w-9 h-9 flex items-center justify-center bg-black/70 backdrop-blur-md border border-white/10 rounded-xl text-white/60 hover:text-white hover:bg-white/10 transition-all shadow-2xl"
+          className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center bg-black/70 backdrop-blur-md border border-white/10 rounded-xl text-white/60 hover:text-white hover:bg-white/10 transition-all shadow-2xl"
           title="Search outlets"
         >
           <Search className="w-4 h-4" />
@@ -218,7 +224,7 @@ function MapControls({
         <button
           type="button"
           onClick={onToggleStats}
-          className={`w-9 h-9 flex items-center justify-center backdrop-blur-md border border-white/10 rounded-xl transition-all shadow-2xl ${
+          className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center backdrop-blur-md border border-white/10 rounded-xl transition-all shadow-2xl ${
             statsOpen ? 'bg-violet-600 text-white' : 'bg-black/70 text-white/60 hover:text-white hover:bg-white/10'
           }`}
           title="Region stats"
@@ -230,7 +236,7 @@ function MapControls({
         <button
           type="button"
           onClick={onRecenter}
-          className="w-9 h-9 flex items-center justify-center bg-black/70 backdrop-blur-md border border-white/10 rounded-xl text-white/60 hover:text-white hover:bg-white/10 transition-all shadow-2xl"
+          className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center bg-black/70 backdrop-blur-md border border-white/10 rounded-xl text-white/60 hover:text-white hover:bg-white/10 transition-all shadow-2xl"
           title="Recenter map"
         >
           <Locate className="w-4 h-4" />
@@ -514,8 +520,10 @@ interface MapInnerProps {
 
 function MapInner({ locations, visits, isVisited, onToggleVisit, mode, onModeChange, regionFilter }: MapInnerProps) {
   const map = useMap();
+  const { isFavourite, toggleFavourite, getNote, saveNote, isAuthed: extrasAuthed } = useOutletExtras();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [mapFilter, setMapFilter] = useState<MapFilter>('all');
+  const [noteText, setNoteText] = useState('');
   const [userPos, setUserPos] = useState<{ lat: number; lng: number } | null>(null);
   const [nearestId, setNearestId] = useState<string | null>(null);
   const [gpsLoading, setGpsLoading] = useState(false);
@@ -527,6 +535,12 @@ function MapInner({ locations, visits, isVisited, onToggleVisit, mode, onModeCha
 
   const selectedLoc = locations.find(l => l.id === selectedId);
   const selectedVisit = visits.find(v => v.location_id === selectedId);
+
+  // Reset note field when a different outlet is opened
+  useEffect(() => {
+    if (selectedId) setNoteText(getNote(selectedId));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedId]);
 
   const [placePhotoUrl, setPlacePhotoUrl] = useState<string | null>(null);
 
@@ -682,8 +696,9 @@ function MapInner({ locations, visits, isVisited, onToggleVisit, mode, onModeCha
     if (regionFilter) result = result.filter(l => (l.region || 'Other') === regionFilter);
     if (mapFilter === 'visited') result = result.filter(l => isVisited(l.id));
     if (mapFilter === 'unvisited') result = result.filter(l => !isVisited(l.id));
+    if (mapFilter === 'favourites') result = result.filter(l => isFavourite(l.id));
     return result;
-  }, [locations, mapFilter, isVisited, regionFilter]);
+  }, [locations, mapFilter, isVisited, regionFilter, isFavourite]);
 
   // When a region filter activates from outside, fit map to those markers
   useEffect(() => {
@@ -753,9 +768,28 @@ function MapInner({ locations, visits, isVisited, onToggleVisit, mode, onModeCha
 
             {/* Details */}
             <div style={{ padding: '10px 12px 12px' }}>
-              <p style={{ fontWeight: 700, fontSize: 13, color: '#f0f2ff', marginBottom: 3, lineHeight: 1.35 }}>
-                {selectedLoc.name}
-              </p>
+              {/* Name row with favourite star */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
+                {extrasAuthed && (
+                  <button
+                    type="button"
+                    onClick={() => toggleFavourite(selectedLoc.id)}
+                    title={isFavourite(selectedLoc.id) ? 'Remove from favourites' : 'Add to favourites'}
+                    style={{
+                      background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                      fontSize: 16, lineHeight: 1, flexShrink: 0,
+                      color: isFavourite(selectedLoc.id) ? '#F5A623' : '#4a5568',
+                      transition: 'color 0.15s ease',
+                    }}
+                  >
+                    {isFavourite(selectedLoc.id) ? '★' : '☆'}
+                  </button>
+                )}
+                <p style={{ fontWeight: 700, fontSize: 13, color: '#f0f2ff', lineHeight: 1.35, margin: 0 }}>
+                  {selectedLoc.name}
+                </p>
+              </div>
+
               <p style={{ fontSize: 11, color: '#8896b3', marginBottom: 7, lineHeight: 1.5 }}>
                 {selectedLoc.address}
               </p>
@@ -808,6 +842,41 @@ function MapInner({ locations, visits, isVisited, onToggleVisit, mode, onModeCha
                   : <><Check style={{ width: 13, height: 13 }} /> Mark as Visited</>
                 }
               </button>
+
+              {/* Notes */}
+              {extrasAuthed && (
+                <div style={{ marginTop: 8 }}>
+                  <textarea
+                    value={noteText}
+                    onChange={e => setNoteText(e.target.value)}
+                    placeholder="Add a note..."
+                    rows={2}
+                    style={{
+                      width: '100%', background: 'rgba(255,255,255,0.06)',
+                      border: '1px solid rgba(255,255,255,0.10)', borderRadius: 8,
+                      padding: '7px 10px', fontSize: 11, color: '#c4cfee',
+                      resize: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
+                      outline: 'none', lineHeight: 1.5, display: 'block',
+                    }}
+                    onFocus={e => { e.currentTarget.style.borderColor = 'rgba(124,66,237,0.5)'; }}
+                    onBlur={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.10)'; }}
+                  />
+                  {noteText !== getNote(selectedLoc.id) && (
+                    <button
+                      type="button"
+                      onClick={() => saveNote(selectedLoc.id, noteText)}
+                      style={{
+                        marginTop: 5, width: '100%', display: 'flex', alignItems: 'center',
+                        justifyContent: 'center', gap: 5, borderRadius: 8, padding: '7px 12px',
+                        fontSize: 11, fontWeight: 600, border: 'none', cursor: 'pointer',
+                        background: 'rgba(124,66,237,0.25)', color: '#c4a8ff',
+                      }}
+                    >
+                      Save note
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </InfoWindow>

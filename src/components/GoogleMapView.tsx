@@ -132,7 +132,8 @@ function MapControls({
   onZoomIn: () => void; onZoomOut: () => void;
 }) {
   return (
-    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-10 pointer-events-none">
+    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-10 pointer-events-none"
+      style={{ maxWidth: 'calc(100vw - 16px)' }}>
       {/* Filter row */}
       <div className="flex items-center bg-black/70 backdrop-blur-md border border-white/10 rounded-xl p-1 gap-0.5 shadow-2xl pointer-events-auto">
         {(['all', 'visited', 'unvisited'] as const).map(f => (
@@ -140,7 +141,7 @@ function MapControls({
             key={f}
             type="button"
             onClick={() => onFilterChange(f)}
-            className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all capitalize ${
+            className={`px-2 py-1 rounded-lg text-[11px] font-semibold transition-all capitalize ${
               mapFilter === f
                 ? 'bg-violet-600 text-white'
                 : 'text-white/50 hover:text-white hover:bg-white/10'
@@ -150,7 +151,7 @@ function MapControls({
       </div>
 
       {/* Main controls row */}
-      <div className="flex items-center gap-1.5 pointer-events-auto">
+      <div className="flex items-center gap-1 pointer-events-auto overflow-x-auto scrollbar-none max-w-full">
         {/* Map type */}
         <div className="flex items-center bg-black/70 backdrop-blur-md border border-white/10 rounded-xl p-1 gap-0.5 shadow-2xl">
           {([
@@ -256,7 +257,9 @@ function StatsOverlay({ stats, onClose }: { stats: RegionEntry[]; onClose: () =>
       border: '1px solid rgba(255,255,255,0.10)',
       borderRadius: 14,
       padding: '12px 14px',
-      minWidth: 200,
+      width: 'min(220px, calc(100vw - 24px))',
+      maxHeight: 'calc(100% - 120px)',
+      overflowY: 'auto',
       boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
       fontFamily: '"DM Sans", system-ui, sans-serif',
     }}>
@@ -327,8 +330,9 @@ function SearchOverlay({
       position: 'absolute',
       top: 12,
       left: 12,
+      right: 12,
       zIndex: 20,
-      width: 280,
+      maxWidth: 280,
       fontFamily: '"DM Sans", system-ui, sans-serif',
     }}>
       <div style={{
@@ -410,7 +414,7 @@ function MapLegend() {
   return (
     <div style={{
       position: 'absolute',
-      bottom: 104,
+      bottom: 'clamp(80px, 104px, 20vh)',
       left: 12,
       zIndex: 10,
       background: 'rgba(0,0,0,0.70)',
@@ -604,7 +608,6 @@ function MapInner({ locations, visits, isVisited, onToggleVisit, mode, onModeCha
         );
         setNearestId(nearest.id);
         setTimeout(() => {
-          map?.panTo({ lat: nearest.lat, lng: nearest.lng });
           setSelectedId(nearest.id);
         }, 800);
       },
@@ -630,7 +633,6 @@ function MapInner({ locations, visits, isVisited, onToggleVisit, mode, onModeCha
 
   // Fly to outlet from search
   const handleSearchSelect = useCallback((loc: Location) => {
-    map?.panTo({ lat: loc.lat, lng: loc.lng });
     map?.setZoom(16);
     setSelectedId(loc.id);
     setStatsOpen(false);
@@ -642,6 +644,20 @@ function MapInner({ locations, visits, isVisited, onToggleVisit, mode, onModeCha
     const t = setTimeout(() => setNearestId(null), 8000);
     return () => clearTimeout(t);
   }, [nearestId]);
+
+  // Pan map so the selected marker sits in the lower portion of the viewport,
+  // ensuring the InfoWindow that appears above it is always fully visible.
+  useEffect(() => {
+    if (!map || !selectedId) return;
+    const loc = locations.find(l => l.id === selectedId);
+    if (!loc) return;
+    map.panTo({ lat: loc.lat, lng: loc.lng });
+    // After the pan settles, offset the center upward so the marker
+    // lands ~60 % down from the top, leaving room for the ~300 px popup above.
+    const t = setTimeout(() => map.panBy(0, -160), 120);
+    return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedId]);
 
   // Region stats for overlay
   const regionStats: RegionEntry[] = useMemo(() => {
@@ -687,7 +703,7 @@ function MapInner({ locations, visits, isVisited, onToggleVisit, mode, onModeCha
           key={loc.id}
           position={{ lat: loc.lat, lng: loc.lng }}
           onClick={() => {
-            setSelectedId(loc.id === selectedId ? null : loc.id);
+            setSelectedId(prev => prev === loc.id ? null : loc.id);
             setStatsOpen(false);
             dismissOnboarding();
           }}
@@ -713,9 +729,11 @@ function MapInner({ locations, visits, isVisited, onToggleVisit, mode, onModeCha
           headerDisabled
         >
           <div style={{
-            width: 280,
+            width: 'min(280px, calc(100vw - 40px))',
+            maxHeight: 'min(420px, 60vh)',
             background: '#12172a', borderRadius: 12,
             overflow: 'hidden',
+            overflowY: 'auto',
             fontFamily: '"DM Sans", system-ui, sans-serif',
           }}>
             {/* Business photo from Google Maps */}

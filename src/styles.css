@@ -347,11 +347,21 @@
   background: #1a1f2e !important;
   border-radius: 12px !important;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6) !important;
-  padding: 12px !important;
+  padding: 0 !important;
+  max-width: min(300px, calc(100vw - 32px)) !important;
+  /* Prevent the native IW container from adding extra space */
+  min-height: unset !important;
 }
 
 .gm-style .gm-style-iw-d {
-  overflow: hidden !important;
+  overflow: auto !important;
+  max-width: min(300px, calc(100vw - 32px)) !important;
+  max-height: min(420px, 60vh) !important;
+}
+
+/* Remove the native IW tail/arrow so our custom design is clean */
+.gm-style .gm-style-iw-tc {
+  display: none !important;
 }
 
 .gm-style .gm-style-iw-t::after {

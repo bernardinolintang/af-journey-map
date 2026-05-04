@@ -49,7 +49,7 @@ export function RegionStats({ locations, isVisited, activeRegion, onRegionClick 
   return (
     <div className="sm:contents">
       {/* Mobile carousel wrapper */}
-      <div className="relative sm:hidden">
+      <div className="relative sm:hidden w-full min-w-0 overflow-hidden">
         {/* Left fade */}
         <div
           className="pointer-events-none absolute left-0 top-0 bottom-0 w-8 z-10 transition-opacity duration-200 rounded-l-xl"
@@ -71,7 +71,7 @@ export function RegionStats({ locations, isVisited, activeRegion, onRegionClick 
         <div
           ref={scrollRef}
           onScroll={handleScroll}
-          className="flex gap-2 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-1"
+          className="flex gap-2 overflow-x-auto snap-x snap-mandatory scrollbar-none pb-1 w-full min-w-0"
         >
           {stats.map(({ region, total, visited, pct }) => {
             const active = activeRegion === region;
@@ -80,7 +80,7 @@ export function RegionStats({ locations, isVisited, activeRegion, onRegionClick 
                 key={region}
                 type="button"
                 onClick={() => onRegionClick(active ? null : region)}
-                className={`snap-start shrink-0 w-[44vw] text-left rounded-xl px-3 py-2.5 flex flex-col gap-1.5 border transition-all ${
+                className={`snap-start shrink-0 w-[calc(44%-4px)] min-w-[130px] text-left rounded-xl px-3 py-2.5 flex flex-col gap-1.5 border transition-all ${
                   active
                     ? 'bg-violet-500/30 border-violet-400 ring-2 ring-violet-400/60 shadow-[0_0_12px_rgba(139,92,246,0.35)]'
                     : 'bg-card border-border'

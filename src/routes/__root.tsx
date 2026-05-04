@@ -70,7 +70,7 @@ function RootComponent() {
         {/* layered background: mesh gradients + grain */}
         <div className="bg-mesh" aria-hidden />
         <div className="bg-grain" aria-hidden />
-        <div className="relative z-10 flex flex-col min-h-screen">
+        <div className="relative z-10 flex flex-col min-h-screen w-full overflow-x-hidden">
           <Header />
           <Outlet />
         </div>

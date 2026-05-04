@@ -65,7 +65,7 @@ function HomePage() {
 
   return (
     <main className="flex flex-col" style={{ height: 'calc(100svh - 60px)' }}>
-      <div className="px-4 sm:px-6 pt-3 pb-2 max-w-7xl mx-auto w-full space-y-2">
+      <div className="px-4 sm:px-6 pt-3 pb-2 w-full space-y-2">
         <ProgressBar
           visited={visitedCount}
           total={totalCount}

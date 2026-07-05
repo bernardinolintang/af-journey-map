@@ -1,13 +1,13 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useAuth } from '@/hooks/use-auth';
-import { useProfile } from '@/hooks/use-profile';
-import { useEffect, useRef, useState } from 'react';
-import { toast } from 'sonner';
-import { Camera, Loader2, Save, KeyRound, User } from 'lucide-react';
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useAuth } from "@/hooks/use-auth";
+import { useProfile } from "@/hooks/use-profile";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+import { Camera, Loader2, Save, KeyRound, User } from "lucide-react";
 
-export const Route = createFileRoute('/profile')({
+export const Route = createFileRoute("/profile")({
   head: () => ({
-    meta: [{ title: 'Profile — AF Tracker' }],
+    meta: [{ title: "Profile — AF Tracker" }],
   }),
   component: ProfilePage,
 });
@@ -17,12 +17,11 @@ function ProfilePage() {
   const navigate = useNavigate();
   const { profile, loading, updateDisplayName, uploadAvatar, updatePassword } = useProfile();
 
-
-  const [name, setName] = useState('');
+  const [name, setName] = useState("");
   const [savingName, setSavingName] = useState(false);
 
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [savingPassword, setSavingPassword] = useState(false);
 
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -31,7 +30,7 @@ function ProfilePage() {
 
   // Redirect if not logged in
   useEffect(() => {
-    if (!authLoading && !user) navigate({ to: '/login' });
+    if (!authLoading && !user) navigate({ to: "/login" });
   }, [authLoading, user, navigate]);
 
   // Seed name field once profile loads
@@ -44,30 +43,45 @@ function ProfilePage() {
     setSavingName(true);
     const { error } = await updateDisplayName(name);
     setSavingName(false);
-    if (error) toast.error('Could not save name');
-    else toast.success('Name updated!');
+    if (error) toast.error("Could not save name");
+    else toast.success("Name updated!");
   };
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) { toast.error('Image must be under 2 MB'); return; }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Image must be under 2 MB");
+      return;
+    }
     setAvatarPreview(URL.createObjectURL(file));
     setUploadingAvatar(true);
     const { error } = await uploadAvatar(file);
     setUploadingAvatar(false);
-    if (error) { toast.error('Upload failed'); setAvatarPreview(null); }
-    else toast.success('Profile picture updated!');
+    if (error) {
+      toast.error("Upload failed");
+      setAvatarPreview(null);
+    } else toast.success("Profile picture updated!");
   };
 
   const handleSavePassword = async () => {
-    if (newPassword.length < 6) { toast.error('Password must be at least 6 characters'); return; }
-    if (newPassword !== confirmPassword) { toast.error('Passwords do not match'); return; }
+    if (newPassword.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
     setSavingPassword(true);
     const { error } = await updatePassword(newPassword);
     setSavingPassword(false);
-    if (error) toast.error('Could not update password');
-    else { toast.success('Password updated!'); setNewPassword(''); setConfirmPassword(''); }
+    if (error) toast.error("Could not update password");
+    else {
+      toast.success("Password updated!");
+      setNewPassword("");
+      setConfirmPassword("");
+    }
   };
 
   if (authLoading || loading) {
@@ -79,7 +93,7 @@ function ProfilePage() {
   }
 
   const avatarSrc = avatarPreview ?? profile?.avatar_url ?? null;
-  const initials = (profile?.display_name ?? user?.email ?? '?')
+  const initials = (profile?.display_name ?? user?.email ?? "?")
     .split(/[\s@]/)[0]
     .slice(0, 2)
     .toUpperCase();
@@ -108,10 +122,11 @@ function ProfilePage() {
             </div>
           )}
           <div className="absolute inset-0 rounded-full bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-            {uploadingAvatar
-              ? <Loader2 className="w-6 h-6 text-white animate-spin" />
-              : <Camera className="w-6 h-6 text-white" />
-            }
+            {uploadingAvatar ? (
+              <Loader2 className="w-6 h-6 text-white animate-spin" />
+            ) : (
+              <Camera className="w-6 h-6 text-white" />
+            )}
           </div>
         </button>
         <p className="text-xs text-muted-foreground">Tap to change photo · max 2 MB</p>
@@ -133,10 +148,12 @@ function ProfilePage() {
         <input
           type="text"
           value={name}
-          onChange={e => setName(e.target.value)}
-          placeholder={user?.email ?? 'Your name'}
+          onChange={(e) => setName(e.target.value)}
+          placeholder={user?.email ?? "Your name"}
           className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
-          onKeyDown={e => { if (e.key === 'Enter') handleSaveName(); }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleSaveName();
+          }}
         />
         <button
           type="button"
@@ -164,14 +181,14 @@ function ProfilePage() {
         <input
           type="password"
           value={newPassword}
-          onChange={e => setNewPassword(e.target.value)}
+          onChange={(e) => setNewPassword(e.target.value)}
           placeholder="New password"
           className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
         />
         <input
           type="password"
           value={confirmPassword}
-          onChange={e => setConfirmPassword(e.target.value)}
+          onChange={(e) => setConfirmPassword(e.target.value)}
           placeholder="Confirm new password"
           className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
         />
@@ -181,7 +198,11 @@ function ProfilePage() {
           disabled={savingPassword || !newPassword}
           className="w-full flex items-center justify-center gap-2 bg-primary text-primary-foreground rounded-lg py-2 text-sm font-semibold hover:bg-primary/90 transition-all disabled:opacity-50"
         >
-          {savingPassword ? <Loader2 className="w-4 h-4 animate-spin" /> : <KeyRound className="w-4 h-4" />}
+          {savingPassword ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <KeyRound className="w-4 h-4" />
+          )}
           Update Password
         </button>
       </div>

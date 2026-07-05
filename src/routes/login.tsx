@@ -72,14 +72,17 @@ function LoginPage() {
     setLoading(false);
   };
 
-  const isRateLimit = error.toLowerCase().includes("rate limit") || error.toLowerCase().includes("too many");
+  const isRateLimit =
+    error.toLowerCase().includes("rate limit") || error.toLowerCase().includes("too many");
 
   return (
     <div className="flex min-h-[85vh] items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center space-y-2">
-          <div className="mx-auto w-14 h-14 rounded-xl bg-primary flex items-center justify-center mb-4"
-               style={{ boxShadow: '0 0 20px oklch(0.52 0.24 295 / 0.4)' }}>
+          <div
+            className="mx-auto w-14 h-14 rounded-xl bg-primary flex items-center justify-center mb-4"
+            style={{ boxShadow: "0 0 20px oklch(0.52 0.24 295 / 0.4)" }}
+          >
             <Dumbbell className="w-7 h-7 text-primary-foreground" />
           </div>
           <h1 className="text-2xl font-bold">{isSignUp ? "Create Account" : "Welcome Back"}</h1>
@@ -113,7 +116,7 @@ function LoginPage() {
                 type="email"
                 placeholder="Email"
                 value={email}
-                onChange={e => setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
                 required
                 className="w-full bg-card border border-border rounded-lg pl-10 pr-4 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
               />
@@ -124,7 +127,7 @@ function LoginPage() {
                 type="password"
                 placeholder="Password"
                 value={password}
-                onChange={e => setPassword(e.target.value)}
+                onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
                 className="w-full bg-card border border-border rounded-lg pl-10 pr-4 py-2.5 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
@@ -153,9 +156,7 @@ function LoginPage() {
           )}
 
           {success && (
-            <div className="bg-primary/10 text-primary text-sm rounded-lg px-3 py-2">
-              {success}
-            </div>
+            <div className="bg-primary/10 text-primary text-sm rounded-lg px-3 py-2">{success}</div>
           )}
 
           <Button type="submit" className="w-full" disabled={loading}>
@@ -168,7 +169,11 @@ function LoginPage() {
           {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
           <button
             type="button"
-            onClick={() => { setIsSignUp(!isSignUp); setError(""); setSuccess(""); }}
+            onClick={() => {
+              setIsSignUp(!isSignUp);
+              setError("");
+              setSuccess("");
+            }}
             className="text-primary hover:underline font-medium"
           >
             {isSignUp ? "Sign in" : "Sign up"}

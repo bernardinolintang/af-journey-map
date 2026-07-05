@@ -3,7 +3,7 @@ import * as React from "react";
 const MOBILE_BREAKPOINT = 768;
 
 function getInitialMobile() {
-  if (typeof window === 'undefined') return false;
+  if (typeof window === "undefined") return false;
   return window.innerWidth < MOBILE_BREAKPOINT;
 }
 

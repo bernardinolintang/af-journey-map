@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './use-auth';
+import { useState, useEffect, useCallback } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "./use-auth";
 
 export interface Location {
   id: string;
@@ -30,18 +30,15 @@ export function useLocations() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     const { data: locs } = await supabase
-      .from('locations')
-      .select('*')
-      .eq('country', 'SG')
-      .order('name');
+      .from("locations")
+      .select("*")
+      .eq("country", "SG")
+      .order("name");
 
     if (locs) setLocations(locs as Location[]);
 
     if (user) {
-      const { data: vis } = await supabase
-        .from('visits')
-        .select('*')
-        .eq('user_id', user.id);
+      const { data: vis } = await supabase.from("visits").select("*").eq("user_id", user.id);
       if (vis) setVisits(vis as Visit[]);
     } else {
       setVisits([]); // clear when signed out so markers reset
@@ -56,11 +53,11 @@ export function useLocations() {
   const toggleVisit = async (locationId: string): Promise<{ requiresAuth: boolean }> => {
     if (!user) return { requiresAuth: true };
 
-    const existing = visits.find(v => v.location_id === locationId);
+    const existing = visits.find((v) => v.location_id === locationId);
     if (existing) {
       // Optimistic remove
-      setVisits(prev => prev.filter(v => v.location_id !== locationId));
-      await supabase.from('visits').delete().eq('id', existing.id);
+      setVisits((prev) => prev.filter((v) => v.location_id !== locationId));
+      await supabase.from("visits").delete().eq("id", existing.id);
     } else {
       // Optimistic add
       const tempVisit: Visit = {
@@ -70,21 +67,40 @@ export function useLocations() {
         visited_at: new Date().toISOString(),
         notes: null,
       };
-      setVisits(prev => [...prev, tempVisit]);
+      setVisits((prev) => [...prev, tempVisit]);
       const { data } = await supabase
-        .from('visits')
+        .from("visits")
         .insert({ user_id: user.id, location_id: locationId })
         .select()
         .single();
       if (data) {
-        setVisits(prev => prev.map(v => v.id === tempVisit.id ? data as Visit : v));
+        setVisits((prev) => prev.map((v) => (v.id === tempVisit.id ? (data as Visit) : v)));
       }
     }
     return { requiresAuth: false };
   };
 
-  const isVisited = (locationId: string) => visits.some(v => v.location_id === locationId);
-  const getVisit = (locationId: string) => visits.find(v => v.location_id === locationId);
+  const updateVisit = async (
+    locationId: string,
+    patch: { visited_at?: string; notes?: string | null },
+  ) => {
+    if (!user) return;
+    const existing = visits.find((v) => v.location_id === locationId);
+    if (!existing) return;
+
+    const next = { ...existing, ...patch };
+    setVisits((prev) => prev.map((v) => (v.location_id === locationId ? next : v)));
+    await supabase
+      .from("visits")
+      .update({
+        visited_at: patch.visited_at,
+        notes: patch.notes,
+      })
+      .eq("id", existing.id);
+  };
+
+  const isVisited = (locationId: string) => visits.some((v) => v.location_id === locationId);
+  const getVisit = (locationId: string) => visits.find((v) => v.location_id === locationId);
   const visitedCount = visits.length;
   const totalCount = locations.length;
   const percentage = totalCount > 0 ? Math.round((visitedCount / totalCount) * 100) : 0;
@@ -94,6 +110,7 @@ export function useLocations() {
     visits,
     loading,
     toggleVisit,
+    updateVisit,
     isVisited,
     getVisit,
     visitedCount,

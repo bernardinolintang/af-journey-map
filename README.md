@@ -175,12 +175,12 @@ Switch to **List** in the navigation bar to:
 
 ### Prerequisites
 
-| Tool | Version |
-|------|---------|
-| Node.js | ≥ 20 |
-| npm | ≥ 10 |
-| Supabase account | — |
-| Google Cloud account | — |
+| Tool                 | Version |
+| -------------------- | ------- |
+| Node.js              | ≥ 20    |
+| npm                  | ≥ 10    |
+| Supabase account     | —       |
+| Google Cloud account | —       |
 
 ### Quick start
 
@@ -204,13 +204,13 @@ The app runs at `http://localhost:3000`.
 
 ### Available scripts
 
-| Script | Description |
-|--------|-------------|
-| `npm run dev` | Start dev server with HMR |
-| `npm run build` | Production build |
+| Script            | Description                      |
+| ----------------- | -------------------------------- |
+| `npm run dev`     | Start dev server with HMR        |
+| `npm run build`   | Production build                 |
 | `npm run preview` | Preview production build locally |
-| `npm run lint` | Run ESLint |
-| `npm run format` | Format with Prettier |
+| `npm run lint`    | Run ESLint                       |
+| `npm run format`  | Format with Prettier             |
 
 ### Project structure
 
@@ -254,7 +254,7 @@ af-journey-map/
 1. Go to [Google Cloud Console](https://console.cloud.google.com)
 2. Enable the **Maps JavaScript API**
 3. Create an **API Key** under Credentials
-4. *(Optional)* Create a **Map ID** (Map Management → Web → Vector) for full 3D road-view tilt support
+4. _(Optional)_ Create a **Map ID** (Map Management → Web → Vector) for full 3D road-view tilt support
 5. Add both to your `.env`
 
 ### Deployment
@@ -278,7 +278,8 @@ Create a `.env` file in the project root with the following keys:
 # Google Maps (required for interactive map)
 VITE_GOOGLE_MAPS_API_KEY="your_google_maps_api_key"
 
-# Google Maps Map ID (optional — enables 3D on road view)
+# Google Maps Map ID (required for Advanced Markers and vector 3D tilt/heading)
+# Create in Google Cloud Console → Map Management with JavaScript vector rendering enabled.
 VITE_GOOGLE_MAPS_MAP_ID="your_map_id"
 
 # Supabase (required for auth + data)
@@ -288,17 +289,19 @@ VITE_SUPABASE_PUBLISHABLE_KEY="your_supabase_anon_key"
 
 > **Never commit `.env` to source control.** It is listed in `.gitignore`.
 
+To enable proper 3D tilt and heading, configure your Google Cloud Map ID for **JavaScript maps with vector rendering enabled**. Without it, satellite view still works but 3D perspective may not apply.
+
 ---
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | [TanStack Start](https://tanstack.com/start) (SSR + React 19) |
-| Routing | [TanStack Router](https://tanstack.com/router) (file-based) |
-| Styling | [Tailwind CSS v4](https://tailwindcss.com) + [shadcn/ui](https://ui.shadcn.com) |
-| Map | [Google Maps JS API](https://developers.google.com/maps/documentation/javascript) via [@vis.gl/react-google-maps](https://visgl.github.io/react-google-maps/) |
-| Auth + DB | [Supabase](https://supabase.com) (Postgres + Auth) |
-| Fonts | [Sora](https://fonts.google.com/specimen/Sora) + [DM Sans](https://fonts.google.com/specimen/DM+Sans) |
-| Deployment | [Cloudflare Pages](https://pages.cloudflare.com) |
-| Build tool | [Vite 7](https://vitejs.dev) |
+| Layer      | Technology                                                                                                                                                    |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Framework  | [TanStack Start](https://tanstack.com/start) (SSR + React 19)                                                                                                 |
+| Routing    | [TanStack Router](https://tanstack.com/router) (file-based)                                                                                                   |
+| Styling    | [Tailwind CSS v4](https://tailwindcss.com) + [shadcn/ui](https://ui.shadcn.com)                                                                               |
+| Map        | [Google Maps JS API](https://developers.google.com/maps/documentation/javascript) via [@vis.gl/react-google-maps](https://visgl.github.io/react-google-maps/) |
+| Auth + DB  | [Supabase](https://supabase.com) (Postgres + Auth)                                                                                                            |
+| Fonts      | [Sora](https://fonts.google.com/specimen/Sora) + [DM Sans](https://fonts.google.com/specimen/DM+Sans)                                                         |
+| Deployment | [Cloudflare Pages](https://pages.cloudflare.com)                                                                                                              |
+| Build tool | [Vite 7](https://vitejs.dev)                                                                                                                                  |

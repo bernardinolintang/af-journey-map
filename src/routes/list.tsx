@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useLocations } from "@/hooks/use-locations";
 import { useOutletExtras } from "@/hooks/use-outlet-extras";
+import { useProfile } from "@/hooks/use-profile";
 import { LocationList } from "@/components/LocationList";
 import { ProgressBar } from "@/components/ProgressBar";
 import { Loader2 } from "lucide-react";
@@ -10,7 +11,10 @@ export const Route = createFileRoute("/list")({
   head: () => ({
     meta: [
       { title: "Outlet List — AF Tracker" },
-      { name: "description", content: "Browse and filter every Anytime Fitness outlet in Singapore." },
+      {
+        name: "description",
+        content: "Browse and filter every Anytime Fitness outlet in Singapore.",
+      },
     ],
   }),
   component: ListPage,
@@ -20,6 +24,7 @@ function ListPage() {
   const navigate = useNavigate();
   const {
     locations,
+    visits,
     loading,
     toggleVisit,
     isVisited,
@@ -28,7 +33,8 @@ function ListPage() {
     percentage,
     isAuthed,
   } = useLocations();
-  const { isFavourite } = useOutletExtras();
+  const { isFavourite, toggleFavourite } = useOutletExtras();
+  const { profile } = useProfile();
 
   const handleToggle = async (id: string) => {
     const { requiresAuth } = await toggleVisit(id);
@@ -52,14 +58,25 @@ function ListPage() {
   }
 
   return (
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 py-4 space-y-4">
+    <main className="max-w-7xl mx-auto px-4 sm:px-6 py-4 space-y-4 pb-8">
       <ProgressBar
         visited={visitedCount}
         total={totalCount}
         percentage={percentage}
         loggedOut={!isAuthed}
+        locations={locations}
+        visits={visits}
+        isVisited={isVisited}
+        displayName={profile?.display_name}
       />
-      <LocationList locations={locations} isVisited={isVisited} isFavourite={isFavourite} onToggleVisit={handleToggle} />
+      <LocationList
+        locations={locations}
+        visits={visits}
+        isVisited={isVisited}
+        isFavourite={isFavourite}
+        onToggleVisit={handleToggle}
+        onToggleFavourite={isAuthed ? toggleFavourite : undefined}
+      />
     </main>
   );
 }

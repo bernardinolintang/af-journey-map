@@ -1,9 +1,9 @@
-import { Link, useLocation } from '@tanstack/react-router';
-import { useAuth } from '@/hooks/use-auth';
-import { useTheme } from '@/hooks/use-theme';
-import { useProfile } from '@/hooks/use-profile';
-import { LogOut, Map, List, LogIn, Sun, Moon } from 'lucide-react';
-import { useState } from 'react';
+import { Link, useLocation } from "@tanstack/react-router";
+import { useAuth } from "@/hooks/use-auth";
+import { useTheme } from "@/hooks/use-theme";
+import { useProfile } from "@/hooks/use-profile";
+import { LogOut, Map, List, LogIn, Sun, Moon } from "lucide-react";
+import { useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,7 +13,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+} from "@/components/ui/alert-dialog";
 
 export function Header() {
   const { user, signOut } = useAuth();
@@ -23,8 +23,10 @@ export function Header() {
   const path = location.pathname;
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
-  const initials = (profile?.display_name ?? user?.email ?? '?')
-    .split(/[\s@]/)[0].slice(0, 2).toUpperCase();
+  const initials = (profile?.display_name ?? user?.email ?? "?")
+    .split(/[\s@]/)[0]
+    .slice(0, 2)
+    .toUpperCase();
 
   return (
     <header className="header-root sticky top-0 z-50">
@@ -35,33 +37,51 @@ export function Header() {
 
       <div className="mx-auto max-w-7xl flex items-center justify-between px-4 sm:px-6 h-[3.75rem] relative">
         {/* ── Logo ── */}
-        <Link to="/" className="flex items-center gap-1.5 sm:gap-2.5 group select-none flex-shrink-0">
+        <Link
+          to="/"
+          className="flex items-center gap-1.5 sm:gap-2.5 group select-none flex-shrink-0 min-w-0"
+        >
           <img
             src="/af-logo.png"
             alt="Anytime Fitness"
-            className="h-8 w-auto object-contain"
-            style={{ filter: 'brightness(1.05)' }}
+            className="h-8 w-auto object-contain shrink-0"
+            style={{ filter: "brightness(1.05)" }}
           />
-          <span className="text-sm font-bold tracking-tight text-foreground">AF Tracker</span>
-          <span className="badge-sg">SG</span>
+          <div className="min-w-0 hidden xs:block sm:block">
+            <div className="flex items-center gap-1.5">
+              <span className="text-sm font-bold tracking-tight text-foreground">AF Tracker</span>
+              <span className="badge-sg" title="Singapore outlets only">
+                SG
+              </span>
+            </div>
+            <p className="text-[10px] text-muted-foreground truncate leading-tight hidden sm:block">
+              Track every Anytime Fitness outlet in Singapore
+            </p>
+          </div>
+          <span className="text-sm font-bold tracking-tight text-foreground sm:hidden">AF Tracker</span>
+          <span className="badge-sg sm:hidden" title="Singapore outlets only">
+            SG
+          </span>
         </Link>
 
         {/* ── Nav ── */}
         <nav className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
-          <NavLink to="/" active={path === '/'} icon={<Map className="w-4 h-4" />} label="Map" />
-          <NavLink to="/list" active={path === '/list'} icon={<List className="w-4 h-4" />} label="List" />
+          <NavLink to="/" active={path === "/"} icon={<Map className="w-4 h-4" />} label="Map" />
+          <NavLink
+            to="/list"
+            active={path === "/list"}
+            icon={<List className="w-4 h-4" />}
+            label="List"
+          />
 
           {/* Theme toggle */}
           <button
             type="button"
             onClick={toggleTheme}
             className="nav-btn nav-btn-ghost"
-            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
           >
-            {theme === 'dark'
-              ? <Sun className="w-4 h-4" />
-              : <Moon className="w-4 h-4" />
-            }
+            {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
 
           {user ? (
@@ -69,7 +89,7 @@ export function Header() {
               {/* Avatar → profile page */}
               <Link
                 to="/profile"
-                className={`nav-btn ${path === '/profile' ? 'nav-btn-active' : 'nav-btn-ghost'} p-0.5`}
+                className={`nav-btn ${path === "/profile" ? "nav-btn-active" : "nav-btn-ghost"} p-0.5`}
                 title="Your profile"
               >
                 {profile?.avatar_url ? (
@@ -133,7 +153,7 @@ function NavLink({
   label: string;
 }) {
   return (
-    <Link to={to} className={`nav-btn ${active ? 'nav-btn-active' : 'nav-btn-ghost'} gap-1.5`}>
+    <Link to={to} className={`nav-btn ${active ? "nav-btn-active" : "nav-btn-ghost"} gap-1.5`}>
       {icon}
       <span className="hidden sm:inline">{label}</span>
     </Link>

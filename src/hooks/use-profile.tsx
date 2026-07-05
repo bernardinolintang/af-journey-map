@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/use-auth';
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
 
 export interface Profile {
   id: string;
@@ -15,7 +15,11 @@ export function useProfile() {
 
   // Read directly from user metadata — no extra table needed
   useEffect(() => {
-    if (!user) { setProfile(null); setLoading(false); return; }
+    if (!user) {
+      setProfile(null);
+      setLoading(false);
+      return;
+    }
     setProfile({
       id: user.id,
       display_name: (user.user_metadata?.display_name as string) ?? null,
@@ -29,24 +33,24 @@ export function useProfile() {
       data: { display_name: name.trim() },
     });
     if (!error && data.user) {
-      setProfile(p => p ? { ...p, display_name: name.trim() } : p);
+      setProfile((p) => (p ? { ...p, display_name: name.trim() } : p));
     }
     return { error };
   };
 
   const uploadAvatar = async (file: File) => {
-    if (!user) return { error: new Error('Not logged in'), url: null };
-    const ext = file.name.split('.').pop();
+    if (!user) return { error: new Error("Not logged in"), url: null };
+    const ext = file.name.split(".").pop();
     const path = `${user.id}/avatar.${ext}`;
     const { error: uploadError } = await supabase.storage
-      .from('avatars')
+      .from("avatars")
       .upload(path, file, { upsert: true });
     if (uploadError) return { error: uploadError, url: null };
 
-    const { data } = supabase.storage.from('avatars').getPublicUrl(path);
+    const { data } = supabase.storage.from("avatars").getPublicUrl(path);
     const url = `${data.publicUrl}?t=${Date.now()}`;
     await supabase.auth.updateUser({ data: { avatar_url: url } });
-    setProfile(p => p ? { ...p, avatar_url: url } : p);
+    setProfile((p) => (p ? { ...p, avatar_url: url } : p));
     return { error: null, url };
   };
 

@@ -34,13 +34,20 @@ export const Route = createRootRoute({
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "AF Tracker — Track Your Anytime Fitness Visits" },
-      { name: "description", content: "Track which Anytime Fitness outlets you've visited in Singapore with an interactive map and progress stats." },
+      {
+        name: "description",
+        content:
+          "Track which Anytime Fitness outlets you've visited in Singapore with an interactive map and progress stats.",
+      },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Sora:wght@600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Sora:wght@600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap",
+      },
     ],
   }),
   shellComponent: RootShell,
@@ -65,18 +72,18 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   return (
     <ThemeProvider>
-    <AuthProvider>
-      <div className="app-root min-h-screen">
-        {/* layered background: mesh gradients + grain */}
-        <div className="bg-mesh" aria-hidden />
-        <div className="bg-grain" aria-hidden />
-        <div className="relative z-10 flex flex-col min-h-screen w-full overflow-x-hidden">
-          <Header />
-          <Outlet />
+      <AuthProvider>
+        <div className="app-root min-h-screen">
+          {/* layered background: mesh gradients + grain */}
+          <div className="bg-mesh" aria-hidden />
+          <div className="bg-grain" aria-hidden />
+          <div className="relative z-10 flex flex-col min-h-screen w-full overflow-x-hidden">
+            <Header />
+            <Outlet />
+          </div>
+          <Toaster position="bottom-center" />
         </div>
-        <Toaster position="bottom-center" />
-      </div>
-    </AuthProvider>
+      </AuthProvider>
     </ThemeProvider>
   );
 }

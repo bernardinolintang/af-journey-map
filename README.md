@@ -204,13 +204,38 @@ The app runs at `http://localhost:3000`.
 
 ### Available scripts
 
-| Script            | Description                      |
-| ----------------- | -------------------------------- |
-| `npm run dev`     | Start dev server with HMR        |
-| `npm run build`   | Production build                 |
-| `npm run preview` | Preview production build locally |
-| `npm run lint`    | Run ESLint                       |
-| `npm run format`  | Format with Prettier             |
+| Script                       | Description                                  |
+| ---------------------------- | -------------------------------------------- |
+| `npm run dev`                | Start dev server with HMR                    |
+| `npm run build`              | Production build                             |
+| `npm run preview`            | Preview production build locally             |
+| `npm run lint`               | Run ESLint                                   |
+| `npm run format`             | Format with Prettier                         |
+| `npm run sync:af-sg:dry-run` | Preview official AF SG location sync changes |
+| `npm run sync:af-sg`         | Apply official AF SG location sync changes   |
+
+### AF location sync
+
+The app preserves visit progress by keeping `locations.id` stable. The AF Singapore sync stores the official gym ID from Anytime Fitness URLs, such as `sg-0008`, in `locations.af_source_id`, then updates matching rows in place. New gyms are inserted, but existing rows are not deleted.
+
+Run a preview first:
+
+```bash
+npm run sync:af-sg:dry-run
+```
+
+Apply changes:
+
+```bash
+npm run sync:af-sg
+```
+
+The scheduled GitHub Action in `.github/workflows/af-sg-location-sync.yml` runs daily. Configure these repository secrets:
+
+```env
+SUPABASE_URL=""
+SUPABASE_SERVICE_ROLE_KEY=""
+```
 
 ### Project structure
 

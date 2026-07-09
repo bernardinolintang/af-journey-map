@@ -10,8 +10,18 @@ export function buildGoogleMapsSearchUrl(location: Pick<Location, "name" | "addr
 }
 
 export function buildGoogleMapsDirectionsUrl(
-  origin: { lat: number; lng: number },
+  origin: { lat: number; lng: number } | null,
   destination: Pick<Location, "lat" | "lng">,
 ): string {
-  return `https://www.google.com/maps/dir/?api=1&origin=${origin.lat},${origin.lng}&destination=${destination.lat},${destination.lng}&travelmode=driving`;
+  const params = new URLSearchParams({
+    api: "1",
+    destination: `${destination.lat},${destination.lng}`,
+    travelmode: "driving",
+  });
+
+  if (origin) {
+    params.set("origin", `${origin.lat},${origin.lng}`);
+  }
+
+  return `https://www.google.com/maps/dir/?${params.toString()}`;
 }

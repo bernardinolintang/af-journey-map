@@ -10,6 +10,8 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
+    "sync:af-sg": "node scripts/sync-af-sg-locations.mjs --apply",
+    "sync:af-sg:dry-run": "node scripts/sync-af-sg-locations.mjs --dry-run",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui"
   },

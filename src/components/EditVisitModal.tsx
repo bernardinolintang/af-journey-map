@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { X } from "lucide-react";
+import { useRef, useState } from "react";
+import { CalendarDays, X } from "lucide-react";
 import type { CrowdLevel, QualityLevel } from "@/hooks/use-outlet-extras";
 
 interface EditVisitModalProps {
@@ -43,6 +43,7 @@ export function EditVisitModal({
   const [crowd, setCrowd] = useState<CrowdLevel | null>(crowdLevel);
   const [equipment, setEquipment] = useState<QualityLevel | null>(equipmentQuality);
   const [clean, setClean] = useState<QualityLevel | null>(cleanliness);
+  const dateInputRef = useRef<HTMLInputElement>(null);
 
   if (!open) return null;
 
@@ -56,6 +57,19 @@ export function EditVisitModal({
       cleanliness: clean,
     });
     onClose();
+  };
+
+  const openDatePicker = () => {
+    const input = dateInputRef.current;
+    if (!input) return;
+
+    if (typeof input.showPicker === "function") {
+      input.showPicker();
+      return;
+    }
+
+    input.focus();
+    input.click();
   };
 
   return (
@@ -84,12 +98,27 @@ export function EditVisitModal({
 
         <div className="p-4 space-y-4">
           <Field label="Visit date">
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="w-full bg-white/6 border border-white/10 rounded-lg px-3 py-2 text-sm text-[#f0f2ff] outline-none focus:border-violet-500/50"
-            />
+            <div className="relative">
+              <button
+                type="button"
+                onClick={openDatePicker}
+                className="w-full h-10 bg-white/6 border border-white/10 rounded-lg pl-3 pr-10 text-left text-sm font-semibold text-[#f0f2ff] outline-none hover:border-violet-400/40 focus-visible:border-violet-500/70 focus-visible:ring-2 focus-visible:ring-violet-500/20 transition-all"
+              >
+                {formatDisplayDate(date)}
+              </button>
+              <CalendarDays
+                className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-violet-200"
+                aria-hidden="true"
+              />
+              <input
+                ref={dateInputRef}
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                tabIndex={-1}
+                className="sr-only"
+              />
+            </div>
           </Field>
 
           <Field label="Notes">
@@ -153,6 +182,12 @@ export function EditVisitModal({
       </div>
     </div>
   );
+}
+
+function formatDisplayDate(value: string) {
+  const [year, month, day] = value.split("-");
+  if (!year || !month || !day) return value;
+  return `${day}/${month}/${year}`;
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {

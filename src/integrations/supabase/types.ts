@@ -55,36 +55,54 @@ export type Database = {
       locations: {
         Row: {
           address: string;
+          af_source_id: string | null;
+          af_url: string | null;
           country: string;
           created_at: string;
           id: string;
           is_24h: boolean | null;
+          is_active: boolean;
+          last_seen_at: string | null;
           lat: number;
           lng: number;
           name: string;
           region: string | null;
+          source_updated_at: string | null;
+          status: string;
         };
         Insert: {
           address: string;
+          af_source_id?: string | null;
+          af_url?: string | null;
           country?: string;
           created_at?: string;
           id?: string;
           is_24h?: boolean | null;
+          is_active?: boolean;
+          last_seen_at?: string | null;
           lat: number;
           lng: number;
           name: string;
           region?: string | null;
+          source_updated_at?: string | null;
+          status?: string;
         };
         Update: {
           address?: string;
+          af_source_id?: string | null;
+          af_url?: string | null;
           country?: string;
           created_at?: string;
           id?: string;
           is_24h?: boolean | null;
+          is_active?: boolean;
+          last_seen_at?: string | null;
           lat?: number;
           lng?: number;
           name?: string;
           region?: string | null;
+          source_updated_at?: string | null;
+          status?: string;
         };
         Relationships: [];
       };

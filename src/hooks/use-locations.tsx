@@ -4,6 +4,8 @@ import { useAuth } from "./use-auth";
 
 export interface Location {
   id: string;
+  af_source_id: string | null;
+  af_url: string | null;
   name: string;
   address: string;
   lat: number;
@@ -11,6 +13,10 @@ export interface Location {
   country: string;
   region: string | null;
   is_24h: boolean;
+  status: string;
+  is_active: boolean;
+  last_seen_at: string | null;
+  source_updated_at: string | null;
 }
 
 export interface Visit {
@@ -33,6 +39,7 @@ export function useLocations() {
       .from("locations")
       .select("*")
       .eq("country", "SG")
+      .or("is_active.is.null,is_active.eq.true")
       .order("name");
 
     if (locs) setLocations(locs as Location[]);

@@ -1,5 +1,12 @@
 import { useState, useCallback, useEffect, useRef, useMemo, memo } from "react";
-import { APIProvider, Map, AdvancedMarker, useMap, InfoWindow, RenderingType } from "@vis.gl/react-google-maps";
+import {
+  APIProvider,
+  Map,
+  AdvancedMarker,
+  useMap,
+  InfoWindow,
+  RenderingType,
+} from "@vis.gl/react-google-maps";
 import type { Location, Visit } from "@/hooks/use-locations";
 import { useOutletExtras } from "@/hooks/use-outlet-extras";
 import { useUserLocation } from "@/hooks/use-user-location";
@@ -155,11 +162,7 @@ const OutletMarker = memo(function OutletMarker({
   zIndex: number;
 }) {
   return (
-    <AdvancedMarker
-      position={{ lat: loc.lat, lng: loc.lng }}
-      onClick={onClick}
-      zIndex={zIndex}
-    >
+    <AdvancedMarker position={{ lat: loc.lat, lng: loc.lng }} onClick={onClick} zIndex={zIndex}>
       <MarkerPin visited={visited} nearest={nearest} selected={selected} />
     </AdvancedMarker>
   );
@@ -338,7 +341,11 @@ function MapControls({
           <div className={`${controlGroup} p-0.5 sm:p-1 gap-0.5`}>
             {(
               [
-                { id: "roadmap" as MapMode, icon: <MapIcon className="w-3.5 h-3.5" />, label: "Map" },
+                {
+                  id: "roadmap" as MapMode,
+                  icon: <MapIcon className="w-3.5 h-3.5" />,
+                  label: "Map",
+                },
                 {
                   id: "satellite" as MapMode,
                   icon: <Satellite className="w-3.5 h-3.5" />,
@@ -840,8 +847,12 @@ function MapInner({
     starredCount,
     isAuthed: extrasAuthed,
   } = useOutletExtras();
-  const { position: userPos, requestLocation, isLoading: gpsLoading, status: geoStatus } =
-    useUserLocation();
+  const {
+    position: userPos,
+    requestLocation,
+    isLoading: gpsLoading,
+    status: geoStatus,
+  } = useUserLocation();
 
   const [selectedId, setSelectedId] = useState<string | null>(initialSelectedId ?? null);
   const [mapFilter, setMapFilter] = useState<MapFilter>("all");
@@ -970,6 +981,23 @@ function MapInner({
       },
     });
   }, [map, locations, isVisited, requestLocation, selectLocation, geoStatus]);
+
+  const handleDirections = useCallback(
+    async (loc: Location) => {
+      const routeWindow = window.open("about:blank", "_blank");
+      const forceRetry =
+        geoStatus === "denied" || geoStatus === "timeout" || geoStatus === "unavailable";
+      const pos = await requestLocation(forceRetry);
+      const url = buildGoogleMapsDirectionsUrl(pos, loc);
+
+      if (routeWindow) {
+        routeWindow.location.href = url;
+      } else {
+        window.open(url, "_blank");
+      }
+    },
+    [geoStatus, requestLocation],
+  );
 
   // Fly to outlet from search
   const handleSearchSelect = useCallback(
@@ -1212,6 +1240,29 @@ function MapInner({
 
                 <button
                   type="button"
+                  onClick={() => handleDirections(selectedLoc)}
+                  style={{
+                    width: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 6,
+                    borderRadius: 8,
+                    padding: "8px 12px",
+                    fontSize: 12,
+                    fontWeight: 600,
+                    border: "1px solid rgba(124,66,237,0.32)",
+                    cursor: "pointer",
+                    background: "rgba(124,66,237,0.14)",
+                    color: "#c4a8ff",
+                    boxSizing: "border-box",
+                  }}
+                >
+                  <Navigation style={{ width: 13, height: 13 }} /> Get directions
+                </button>
+
+                <button
+                  type="button"
                   onClick={() => onToggleVisit(selectedLoc.id)}
                   style={{
                     width: "100%",
@@ -1412,9 +1463,7 @@ export function GoogleMapView({
         prevModeRef.current = mode;
         setIs3DLoading(true);
         if (!MAP_ID) {
-          toast.info(
-            "Set VITE_GOOGLE_MAPS_MAP_ID with vector rendering enabled for full 3D tilt.",
-          );
+          toast.info("Set VITE_GOOGLE_MAPS_MAP_ID with vector rendering enabled for full 3D tilt.");
         }
       }
 
@@ -1429,9 +1478,7 @@ export function GoogleMapView({
       if (tiltApplied) return;
 
       const isRaster =
-        renderingType === "RASTER" ||
-        renderingType === "UNINITIALIZED" ||
-        !renderingType;
+        renderingType === "RASTER" || renderingType === "UNINITIALIZED" || !renderingType;
 
       toast.warning(
         isRaster

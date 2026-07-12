@@ -982,23 +982,6 @@ function MapInner({
     });
   }, [map, locations, isVisited, requestLocation, selectLocation, geoStatus]);
 
-  const handleDirections = useCallback(
-    async (loc: Location) => {
-      const routeWindow = window.open("about:blank", "_blank");
-      const forceRetry =
-        geoStatus === "denied" || geoStatus === "timeout" || geoStatus === "unavailable";
-      const pos = await requestLocation(forceRetry);
-      const url = buildGoogleMapsDirectionsUrl(pos, loc);
-
-      if (routeWindow) {
-        routeWindow.location.href = url;
-      } else {
-        window.open(url, "_blank");
-      }
-    },
-    [geoStatus, requestLocation],
-  );
-
   // Fly to outlet from search
   const handleSearchSelect = useCallback(
     (loc: Location) => {
@@ -1238,9 +1221,13 @@ function MapInner({
                   <MapIcon style={{ width: 13, height: 13 }} /> Open in Google Maps
                 </a>
 
-                <button
-                  type="button"
-                  onClick={() => handleDirections(selectedLoc)}
+                <a
+                  href={buildGoogleMapsDirectionsUrl(userPos, selectedLoc)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => {
+                    if (!userPos) void requestLocation();
+                  }}
                   style={{
                     width: "100%",
                     display: "flex",
@@ -1255,11 +1242,12 @@ function MapInner({
                     cursor: "pointer",
                     background: "rgba(124,66,237,0.14)",
                     color: "#c4a8ff",
+                    textDecoration: "none",
                     boxSizing: "border-box",
                   }}
                 >
                   <Navigation style={{ width: 13, height: 13 }} /> Get directions
-                </button>
+                </a>
 
                 <button
                   type="button"
